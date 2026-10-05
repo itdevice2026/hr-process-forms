@@ -405,7 +405,9 @@ const $ = (s, el=document) => el.querySelector(s);
 const $$ = (s, el=document) => [...el.querySelectorAll(s)];
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const isHR = () => S.me && ['hr','admin'].includes(S.me.role);
-const isAdmin = () => S.me && S.me.role === 'admin';
+const isAdmin = () => !!(S.me && S.me.is_admin);
+const coOpts = (sel, list) => (list||S.companies).map(c=>`<option value="${c.id}" ${c.id===sel?'selected':''}>${esc(c.code)} – ${esc(c.name)}</option>`).join('');
+const myCos = () => isAdmin() ? S.companies : S.companies.filter(c=>c.id===S.me.company_id);
 const empName = id => (S.emps.find(e=>e.id===id)||{}).full_name || '';
 const formOf = code => S.forms.find(f=>f.code===code) || {code, name:code, title:code, max_rows:7};
 const today = () => new Date().toLocaleDateString('en-CA',{timeZone:'Asia/Manila'});
@@ -586,13 +588,13 @@ async function vUsers(m){
   m.innerHTML = `<div class="row"><div><h1>User accounts</h1><p class="sub" style="margin:0">Create sign-in accounts for employees and reset forgotten passwords. Add the employee first under <a href="#/admin/employees">Employees</a>.</p></div></div>
   <div class="row" style="margin:14px 0 10px"><input class="in" id="us" placeholder="Search name or email…" style="max-width:300px">
   <select class="in" id="uf" style="max-width:200px"><option value="">All</option><option value="none">No login yet</option><option value="has">Has login</option></select>
-  <select class="in" id="uc" style="max-width:240px"><option value="">All companies</option>${S.companies.map(c=>`<option value="${c.id}">${esc(c.code)} – ${esc(c.name)}</option>`).join('')}</select></div>
+  <select class="in" id="uc" style="max-width:240px"><option value="">All companies</option>${coOpts(isAdmin()?'':S.me.company_id)}</select></div>
   <div id="ul"></div>`;
   const draw=()=>{
     const s=$('#us').value.toLowerCase(), f=$('#uf').value, c=$('#uc').value;
     const rows=S.emps.filter(e=>e.active&&(!c||e.company_id===c)&&(!f||(f==='has')===!!e.user_id)&&(!s||[e.full_name,e.email].join(' ').toLowerCase().includes(s)));
     $('#ul').innerHTML = !rows.length?'<div class="card empty">No employees match.</div>':`<div class="tw"><table class="t"><thead><tr><th>Name</th><th>Login email</th><th>Company</th><th>Role</th><th>Login</th><th>Last sign-in</th><th></th></tr></thead><tbody>
-    ${rows.map(e=>{ const canManage = e.role!=='admin' || isAdmin();
+    ${rows.map(e=>{ const canManage = isAdmin() || (e.company_id===S.me.company_id && e.role!=='admin');
       return `<tr><td><b>${esc(e.full_name)}</b><br><small style="color:var(--ink-3)">${esc(e.position||'')}</small></td><td>${esc(e.email||'—')}</td><td>${esc((S.companies.find(x=>x.id===e.company_id)||{}).code||'')}</td>
       <td>${e.role==='employee'?'Employee':`<span class="pill st-returned">${e.role}</span>`}</td>
       <td>${e.user_id?'<span class="pill st-approved">active</span>':'<span class="pill st-waiting">none</span>'}</td>
@@ -611,15 +613,16 @@ async function vUsers(m){
 }
 
 async function loadRefs(){
-  const [forms, lts, cos, depts, emps, routes] = await Promise.all([
+  const [forms, lts, cos, depts, emps, routes, access] = await Promise.all([
     q(sb.from('hrf_form_types').select('*').order('sort')),
     q(sb.from('hrf_leave_types').select('*').order('sort')),
     q(sb.from('hrf_companies').select('*').order('code')),
     q(sb.from('hrf_departments').select('*').order('name')),
     q(sb.from('hrf_employees').select('*').order('full_name')),
     q(sb.from('hrf_route_steps').select('*').eq('active',true).order('step_no')),
+    q(sb.from('hrf_company_access').select('*')),
   ]);
-  Object.assign(S, { forms, leaveTypes:lts, companies:cos, depts, emps, routes });
+  Object.assign(S, { forms, leaveTypes:lts, companies:cos, depts, emps, routes, access });
 }
 
 /* ---------- shell ---------- */
@@ -630,6 +633,7 @@ function renderShell(){
     <button class="menu-btn" id="mb" aria-label="Menu">☰</button>
     <div class="brand"><img src="${co.logo||window.DEFAULT_LOGO}" alt=""><div>HR Process Forms<small>${esc(co.name||'')}</small></div></div>
     <div class="sp"></div>
+    ${(S.me.companies||[]).length>1?`<select class="in" id="cosw" title="Switch company" style="max-width:230px;min-height:32px;padding:4px 8px;font-size:13px">${S.me.companies.map(c=>`<option value="${c.company_id}" ${c.company_id===S.me.company_id?'selected':''}>${esc(c.code)}${c.is_home?' (home)':''}${c.role==='hr'?' · HR':c.role==='admin'?' · Admin':''}</option>`).join('')}</select>`:''}
     <div class="who"><b>${esc(S.me.full_name)}</b><br><span>${esc(S.me.position||'')}${S.me.role!=='employee'?' · '+S.me.role.toUpperCase():''}</span></div>
     <button class="btn sm" id="cpw" title="Change password">🔑</button>
     <button class="btn sm" id="so">Sign out</button>
@@ -647,7 +651,7 @@ function renderShell(){
       <a href="#/admin/employees" data-r="admin/employees">Employees</a>
       <a href="#/admin/users" data-r="admin/users">User accounts</a>
       <a href="#/admin/departments" data-r="admin/departments">Departments</a>
-      <a href="#/admin/routes" data-r="admin/routes">Approval routes</a>
+      ${isAdmin()?'<a href="#/admin/routes" data-r="admin/routes">Approval routes</a>':''}
       <a href="#/admin/leavetypes" data-r="admin/leavetypes">Leave types</a>
       <a href="#/admin/companies" data-r="admin/companies">Companies</a>`:''}
     </nav>
@@ -655,13 +659,17 @@ function renderShell(){
   </div>`;
   $('#so').onclick=()=>sb.auth.signOut();
   $('#cpw').onclick=()=>renderChangePw(false);
+  $('#cosw') && ($('#cosw').onchange=async ev=>{
+    try{ await q(sb.rpc('hrf_switch_company',{p_company:ev.target.value})); S.me=null; location.hash='#/home'; await boot(); toast('Switched to '+(S.me?.company_name||'company')); }
+    catch(e){ toast(errMsg(e),true); }
+  });
   $('#mb').onclick=()=>$('#side').classList.toggle('open');
   refreshInboxCount();
 }
 
 async function refreshInboxCount(){
   try{
-    const rows = await q(sb.from('hrf_approvals').select('id,assignee_id,approver_kind,hrf_requests!inner(status,employee_id)').eq('status','pending').eq('hrf_requests.status','pending'));
+    const rows = await q(sb.from('hrf_approvals').select('id,assignee_id,approver_kind,hrf_requests!inner(status,employee_id,company_id)').eq('status','pending').eq('hrf_requests.status','pending'));
     S.inboxCount = rows.filter(a=>mayAct(a, a.hrf_requests)).length;
     const b=$('#ib'); if(b){ b.textContent=S.inboxCount; b.classList.toggle('hidden', !S.inboxCount); }
   }catch(e){}
@@ -669,7 +677,7 @@ async function refreshInboxCount(){
 function mayAct(a, req){
   if(a.status!=='pending') return false;
   if(req && req.employee_id===S.me.id && !isAdmin()) return false;
-  return a.assignee_id===S.me.id || (a.approver_kind==='hr' && isHR());
+  return a.assignee_id===S.me.id || (a.approver_kind==='hr' && (isAdmin() || (isHR() && req && req.company_id===S.me.company_id)));
 }
 
 /* ---------- router ---------- */
@@ -948,7 +956,7 @@ async function vReports(m){
     <div><label class="f">Filed to</label><input class="in" type="date" id="r-to" value="${today()}"></div>
     <div><label class="f">Form</label><select class="in" id="r-form"><option value="">All</option>${S.forms.map(f=>`<option value="${f.code}">${esc(f.name)}</option>`).join('')}</select></div>
     <div><label class="f">Status</label><select class="in" id="r-st"><option value="">All</option>${['pending','returned','approved','rejected','cancelled'].map(s=>`<option>${s}</option>`).join('')}</select></div>
-    <div><label class="f">Company</label><select class="in" id="r-co"><option value="">All</option>${S.companies.map(c=>`<option value="${c.id}">${esc(c.code)} – ${esc(c.name)}</option>`).join('')}</select></div>
+    <div><label class="f">Company</label><select class="in" id="r-co"><option value="">All</option>${coOpts(isAdmin()?'':S.me.company_id, myCos())}</select></div>
     <div><label class="f">Department</label><input class="in" id="r-dept" placeholder="contains…"></div>
     <div><label class="f">Employee</label><input class="in" id="r-emp" placeholder="name contains…"></div>
     <div style="display:flex;align-items:end;gap:8px"><button class="btn pri" id="r-go">Search</button></div>
@@ -1003,7 +1011,7 @@ async function vEmployees(m){
   m.innerHTML = `<div class="row"><div><h1>Employees</h1><p class="sub" style="margin:0">Employees sign in with the email listed here. Set each person's immediate head so approvals route correctly.</p></div><div class="sp"></div>
   <button class="btn" id="imp">Import CSV</button><button class="btn pri" id="add">+ Add employee</button></div>
   <div class="row" style="margin:14px 0 10px"><input class="in" id="es" placeholder="Search name, email, position…" style="max-width:320px">
-  <select class="in" id="ec" style="max-width:240px"><option value="">All companies</option>${S.companies.map(c=>`<option value="${c.id}">${esc(c.code)} – ${esc(c.name)}</option>`).join('')}</select>
+  <select class="in" id="ec" style="max-width:240px"><option value="">All companies</option>${coOpts(isAdmin()?'':S.me.company_id)}</select>
   <label class="row" style="gap:6px;font-size:13px"><input type="checkbox" id="ei"> Show inactive</label></div>
   <div id="el"></div>`;
   const draw=()=>{
@@ -1026,7 +1034,7 @@ function empForm(e){
     <div style="grid-column:1/-1"><label class="f">Full name *</label><input class="in" id="f-name" value="${esc(e.full_name||'')}"></div>
     <div><label class="f">Email (login) *</label><input class="in" id="f-email" type="email" value="${esc(e.email||'')}"></div>
     <div><label class="f">Employee no.</label><input class="in" id="f-no" value="${esc(e.emp_no||'')}"></div>
-    <div><label class="f">Company *</label><select class="in" id="f-co">${S.companies.map(c=>`<option value="${c.id}" ${c.id===e.company_id?'selected':''}>${esc(c.code)} – ${esc(c.name)}</option>`).join('')}</select></div>
+    <div><label class="f">Company *</label><select class="in" id="f-co" ${e.id&&!isAdmin()?'disabled':''}>${coOpts(e.company_id, e.id&&!isAdmin()?S.companies:myCos())}</select></div>
     <div><label class="f">Department</label><select class="in" id="f-dept">${deptOpts(e.company_id)}</select></div>
     <div><label class="f">Position / job title</label><input class="in" id="f-pos" value="${esc(e.position||'')}"></div>
     <div><label class="f">Date hired</label><input class="in" id="f-hired" type="date" value="${esc(e.date_hired||'')}"></div>
@@ -1035,6 +1043,10 @@ function empForm(e){
     <div><label class="f">Status</label><select class="in" id="f-act"><option value="true" ${e.active!==false?'selected':''}>Active</option><option value="false" ${e.active===false?'selected':''}>Inactive</option></select></div>
     ${!e.id?`<div style="grid-column:1/-1;font-size:13px"><label><input type="checkbox" id="f-mklogin" checked> Create a login account for this employee after saving</label></div>`:''}
     ${e.id&&!e.user_id&&e.email?`<div style="grid-column:1/-1;font-size:13px">No login yet. <a href="#" id="f-login">Create login…</a></div>`:''}
+    ${isAdmin()?`<div style="grid-column:1/-1"><label class="f">Access to other companies</label>
+      <div class="grid g2" style="gap:6px">${S.companies.filter(c=>c.id!==e.company_id).map(c=>{ const g=(S.access||[]).find(x=>x.employee_id===e.id&&x.company_id===c.id&&x.active);
+        return `<div class="row acc" data-co="${c.id}" style="gap:6px;font-size:13px"><label style="flex:1"><input type="checkbox" class="acc-on" ${g?'checked':''}> ${esc(c.code)}</label><select class="in acc-role" style="width:auto;min-height:28px;padding:2px 6px;font-size:12px"><option value="employee">Employee</option><option value="hr" ${g&&g.role==='hr'?'selected':''}>HR</option></select></div>`; }).join('')}</div>
+      <div style="font-size:12px;color:var(--ink-3);margin-top:4px">Lets this login switch to other companies from the top bar. "HR" gives HR rights while working in that company. The home company (above) is always included.</div></div>`:''}
     ${e.user_id?`<div style="grid-column:1/-1;font-size:12px;color:var(--ink-3)">Login linked. <label><input type="checkbox" id="f-unlink"> Unlink login (e.g. if the email changed)</label></div>`:''}
   </div>
   <div class="acts"><button class="btn" data-close>Cancel</button><button class="btn pri" id="f-save">Save</button></div>`, (mm, close)=>{
@@ -1051,6 +1063,15 @@ function empForm(e){
         if(e.id) await q(sb.from('hrf_employees').update(rec).eq('id',e.id));
         let created=null;
         if(!e.id) created = await q(sb.from('hrf_employees').insert(rec).select().single());
+        if(isAdmin()){
+          const empId = e.id || created.id;
+          for(const row of $$('.acc',mm)){
+            const co=row.dataset.co, on=$('.acc-on',row).checked && co!==rec.company_id, role=$('.acc-role',row).value;
+            const g=(S.access||[]).find(x=>x.employee_id===empId&&x.company_id===co);
+            if(g && (g.active!==on || g.role!==role)) await q(sb.from('hrf_company_access').update({active:on, role}).eq('id',g.id));
+            else if(!g && on) await q(sb.from('hrf_company_access').insert({employee_id:empId, company_id:co, role}));
+          }
+        }
         const mk = $('#f-mklogin',mm)?.checked;
         close(); toast('Saved'); await loadRefs(); route();
         if(created && mk) loginDialog(created,'create');
