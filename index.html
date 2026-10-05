@@ -1,0 +1,1108 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>HR Process Forms</title>
+<style>
+:root{
+  --red:#c8102e; --red-d:#9e0c24; --red-50:#fdecef;
+  --ink:#1b1f24; --ink-2:#4a5260; --ink-3:#7a8394;
+  --line:#e3e6eb; --bg:#f5f6f8; --card:#fff;
+  --ok:#1f7a3f; --ok-50:#e7f5ec; --warn:#a36200; --warn-50:#fff4e0; --bad:#b42318; --bad-50:#fdeceb; --info:#1d4ed8; --info-50:#e8efff;
+  --r:10px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+a{color:var(--red);text-decoration:none}
+button,input,select,textarea{font:inherit;color:inherit}
+.hidden{display:none!important}
+
+/* layout */
+.topbar{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:12px;background:#fff;border-bottom:1px solid var(--line);padding:0 16px;height:56px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700;letter-spacing:.2px}
+.brand img{width:30px;height:30px;object-fit:contain}
+.brand small{display:block;font-weight:500;color:var(--ink-3);font-size:11px;letter-spacing:0}
+.topbar .sp{flex:1}
+.who{font-size:13px;color:var(--ink-2);text-align:right;line-height:1.2}
+.who b{color:var(--ink)}
+.menu-btn{display:none;border:0;background:none;font-size:22px;padding:4px 8px;cursor:pointer}
+.shell{display:flex;min-height:calc(100vh - 56px)}
+.side{width:230px;flex:none;background:#fff;border-right:1px solid var(--line);padding:12px 10px}
+.side h6{margin:14px 10px 6px;font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--ink-3)}
+.side a{display:flex;align-items:center;justify-content:space-between;padding:8px 10px;border-radius:8px;color:var(--ink-2);font-weight:500}
+.side a:hover{background:var(--bg)}
+.side a.on{background:var(--red-50);color:var(--red-d)}
+.badge{min-width:20px;padding:0 6px;border-radius:10px;background:var(--red);color:#fff;font-size:11px;text-align:center;line-height:18px}
+main{flex:1;min-width:0;padding:22px 26px 60px;max-width:1280px}
+h1{font-size:22px;margin:0 0 4px}
+.sub{color:var(--ink-3);margin:0 0 18px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:16px}
+.card+.card{margin-top:14px}
+.card h3{margin:0 0 12px;font-size:15px}
+.grid{display:grid;gap:14px}
+.g2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.g3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.g4{grid-template-columns:repeat(4,minmax(0,1fr))}
+.g5{grid-template-columns:repeat(5,minmax(0,1fr))}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.row .sp{flex:1}
+
+/* tiles */
+.tile{display:block;background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:16px;color:var(--ink);transition:.15s}
+.tile:hover{border-color:var(--red);box-shadow:0 2px 10px rgba(200,16,46,.08)}
+.tile .ic{width:36px;height:36px;border-radius:9px;background:var(--red-50);color:var(--red);display:grid;place-items:center;font-weight:800;font-size:12px;margin-bottom:10px}
+.tile b{display:block}
+.tile span{font-size:12px;color:var(--ink-3)}
+.stat{background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:14px 16px}
+.stat .n{font-size:26px;font-weight:700}
+.stat .l{font-size:12px;color:var(--ink-3)}
+
+/* forms */
+label.f{display:block;font-size:12px;font-weight:600;color:var(--ink-2);margin-bottom:4px}
+.in,select.in,textarea.in{width:100%;padding:8px 10px;border:1px solid #cfd4dc;border-radius:8px;background:#fff;min-height:36px}
+.in:focus{outline:2px solid rgba(200,16,46,.25);border-color:var(--red)}
+textarea.in{min-height:70px;resize:vertical}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:8px;border:1px solid #cfd4dc;background:#fff;cursor:pointer;font-weight:600;min-height:36px;white-space:nowrap}
+.btn:hover{background:var(--bg)}
+.btn.pri{background:var(--red);border-color:var(--red);color:#fff}
+.btn.pri:hover{background:var(--red-d)}
+.btn.ok{background:var(--ok);border-color:var(--ok);color:#fff}
+.btn.bad{color:var(--bad);border-color:#f0b8b3}
+.btn.sm{padding:4px 10px;min-height:28px;font-size:12px}
+.btn:disabled{opacity:.55;cursor:not-allowed}
+.kv{display:grid;grid-template-columns:130px 1fr;gap:6px 10px;font-size:13px}
+.kv dt{color:var(--ink-3)} .kv dd{margin:0;font-weight:500}
+
+/* tables */
+.tw{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r);background:#fff}
+table.t{width:100%;border-collapse:collapse;font-size:13px}
+table.t th{background:#fafbfc;text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.4px;color:var(--ink-3);padding:9px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+table.t td{padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+table.t tr:last-child td{border-bottom:0}
+table.t tr.click{cursor:pointer} table.t tr.click:hover td{background:#fafbfc}
+table.t .num{text-align:right}
+table.ed td{padding:5px 6px} table.ed .in{min-height:32px;padding:5px 7px}
+.empty{padding:28px;text-align:center;color:var(--ink-3)}
+
+.pill{display:inline-block;padding:2px 9px;border-radius:20px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.3px}
+.st-pending{background:var(--warn-50);color:var(--warn)}
+.st-approved{background:var(--ok-50);color:var(--ok)}
+.st-rejected{background:var(--bad-50);color:var(--bad)}
+.st-returned{background:var(--info-50);color:var(--info)}
+.st-cancelled{background:#eef0f3;color:var(--ink-3)}
+.st-waiting{background:#eef0f3;color:var(--ink-3)}
+.st-skipped{background:#eef0f3;color:var(--ink-3)}
+
+.steps{display:flex;flex-direction:column;gap:0}
+.step{display:flex;gap:12px;padding:10px 0;border-bottom:1px dashed var(--line)}
+.step:last-child{border-bottom:0}
+.step .dot{width:26px;height:26px;border-radius:50%;flex:none;display:grid;place-items:center;font-size:12px;font-weight:700;background:#eef0f3;color:var(--ink-3)}
+.step.approved .dot{background:var(--ok);color:#fff}
+.step.pending .dot{background:var(--warn);color:#fff}
+.step.rejected .dot,.step.returned .dot{background:var(--bad);color:#fff}
+.step small{color:var(--ink-3)}
+.log{font-size:12px;color:var(--ink-2)}
+.log div{padding:4px 0;border-bottom:1px solid var(--line)}
+.log div:last-child{border:0}
+
+/* login */
+.login{min-height:100vh;display:grid;place-items:center;padding:16px}
+.login .card{width:100%;max-width:380px;padding:26px}
+.login .brand{justify-content:center;margin-bottom:18px;flex-direction:column;text-align:center}
+.login .brand img{width:56px;height:56px}
+.msg{padding:9px 12px;border-radius:8px;font-size:13px;margin:10px 0}
+.msg.err{background:var(--bad-50);color:var(--bad)}
+.msg.ok{background:var(--ok-50);color:var(--ok)}
+.msg.info{background:var(--info-50);color:var(--info)}
+
+/* modal + toast */
+.modal-bg{position:fixed;inset:0;background:rgba(15,20,30,.45);display:grid;place-items:center;z-index:50;padding:16px}
+.modal{background:#fff;border-radius:12px;width:100%;max-width:560px;max-height:90vh;overflow:auto;padding:20px}
+.modal h3{margin:0 0 14px}
+.modal .acts{display:flex;justify-content:flex-end;gap:8px;margin-top:18px}
+#toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);z-index:60;display:flex;flex-direction:column;gap:6px;align-items:center}
+#toast div{background:#1b1f24;color:#fff;padding:10px 16px;border-radius:8px;font-size:13px;box-shadow:0 4px 16px rgba(0,0,0,.2)}
+#toast div.err{background:var(--bad)}
+.spin{display:inline-block;width:16px;height:16px;border:2px solid #ddd;border-top-color:var(--red);border-radius:50%;animation:sp .7s linear infinite;vertical-align:middle}
+@keyframes sp{to{transform:rotate(360deg)}}
+
+@media (max-width:900px){
+  #dgrid{grid-template-columns:1fr!important}
+  .g3,.g4,.g5{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .menu-btn{display:block}
+  .side{position:fixed;top:56px;bottom:0;left:0;z-index:30;transform:translateX(-100%);transition:.2s;box-shadow:4px 0 20px rgba(0,0,0,.1)}
+  .side.open{transform:none}
+  main{padding:16px}
+  .who span{display:none}
+}
+@media (max-width:560px){ .g2,.g3,.g4,.g5{grid-template-columns:1fr} .kv{grid-template-columns:110px 1fr} }
+
+/* ================= PRINT (paper forms) ================= */
+#print-root{display:none}
+@media print{
+  @page{size:letter;margin:0}
+  html,body{background:#fff!important}
+  body>*:not(#print-root){display:none!important}
+  #print-root{display:block}
+}
+.pp{position:relative;width:8.5in;height:11in;overflow:hidden;background:#fff;color:#000;font-family:Arial,Helvetica,sans-serif;page-break-after:always;break-after:page}
+.pp:last-child{page-break-after:auto;break-after:auto}
+.pp *{box-sizing:border-box}
+.pc{position:absolute;border:1px solid #000}
+.pc table{border-collapse:collapse;table-layout:fixed;width:100%}
+.pc td{border:1px solid #000;padding:0 2px;overflow:hidden;white-space:nowrap;vertical-align:middle;font-size:6.6pt}
+.pc .lb{font-weight:700;vertical-align:top;padding-top:2px}
+.pc .val{font-weight:400;margin-left:4px}
+.pc .hd td{font-weight:700;text-align:center}
+.pc .sp-l{letter-spacing:2.5pt}
+.pc .cell{text-align:center}
+.pc .wrap{white-space:normal;vertical-align:top;padding:3px 4px;line-height:1.25}
+.pc .nb{border:0}
+.pco{position:absolute;font-size:5.5pt;font-weight:700;font-style:italic}
+.pref{position:absolute;font-size:5.5pt;color:#444}
+.co{position:relative;height:100%}
+.co img{position:absolute;object-fit:contain}
+.co .cn{position:absolute;font-weight:700;white-space:nowrap}
+.co .ca{position:absolute;white-space:nowrap}
+.ab{position:absolute;white-space:nowrap}
+.sl{position:absolute;border-top:1px solid #000;text-align:center;font-weight:700;font-style:italic;white-space:nowrap}
+.sv{position:absolute;text-align:center;font-weight:700;white-space:nowrap;overflow:hidden}
+.sv i{font-weight:400;font-style:normal;font-size:.8em}
+.ptitle{font-weight:700;text-align:center;white-space:nowrap}
+
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head><body>
+<div id="app"></div>
+<div id="print-root"></div>
+<div id="toast"></div>
+<script>window.DEFAULT_LOGO='data:image/png;base64,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';(function(){var l=document.createElement('link');l.rel='icon';l.href=window.DEFAULT_LOGO;document.head.appendChild(l);})();</script>
+<script>
+/* ===== Paper-form print engine: replicates the MTC sample forms (Letter, HR Copy + Employee Copy) ===== */
+const PX = 110;                       // reference scale: sample PDFs rendered at 110 px/in
+const U = n => Math.round(n * 96 / PX) + 'px';   // whole CSS px keeps every ruled line the same weight
+const PT = n => n + 'pt';
+
+function pDate(s){ if(!s) return ''; const [y,m,d]=String(s).slice(0,10).split('-'); return `${m}/${d}/${y}`; }
+function pTime(s){ if(!s) return ''; let [h,m]=String(s).split(':').map(Number); const ap=h>=12?'PM':'AM'; h=h%12||12; return `${h}:${String(m).padStart(2,'0')} ${ap}`; }
+function pTs(ts){ if(!ts) return ''; const d=new Date(ts); return d.toLocaleDateString('en-US',{timeZone:'Asia/Manila',month:'2-digit',day:'2-digit',year:'numeric'}); }
+function pe(s){ return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+/* signature values (printed name over the line) */
+function sigs(d){
+  const a = d.approvals || [];
+  const pick = slot => { const done = a.filter(x=>x.print_slot===slot && x.status==='approved'); return done[done.length-1]; };
+  const ap = pick('approved'), rc = pick('received');
+  return {
+    prepared: { name: d.req.emp_name, date: pDate(d.req.date_filed) },
+    approved: ap ? { name: ap.acted_by_name, date: pTs(ap.acted_at) } : null,
+    received: rc ? { name: rc.acted_by_name, date: pTs(rc.acted_at) } : null,
+  };
+}
+function sv(v, left, width, lineTop, fs){
+  if(!v || !v.name) return '';
+  return `<div class="sv" style="left:${U(left)};width:${U(width)};top:${U(lineTop-13)};font-size:${PT(fs)}">${pe(v.name)} <i>${pe(v.date||'')}</i></div>`;
+}
+function sline(left, width, top, caption, fs){
+  return `<div class="sl" style="left:${U(left)};width:${U(width)};top:${U(top)};font-size:${PT(fs)}">${caption}</div>`;
+}
+function abs(left, top, html, style=''){ return `<div class="ab" style="left:${U(left)};top:${U(top)};${style}">${html}</div>`; }
+function colgroup(ws){ return '<colgroup>' + ws.map(w=>`<col style="width:${U(w)}">`).join('') + '</colgroup>'; }
+function lv(label, value){ return `<span class="lb-t">${label}</span><span class="val">${pe(value||'')}</span>`; }
+
+function companyHead(co, g){
+  // g: {logo:[l,t,s], name:[l,t,fs], addr:[l,t,fs]}
+  return `<div class="co" style="${g.h?'height:'+U(g.h):''}">
+    <img src="${co.logo || window.DEFAULT_LOGO}" style="left:${U(g.logo[0])};top:${U(g.logo[1])};width:${U(g.logo[2])};height:${U(g.logo[2])}">
+    <div class="cn" style="left:${U(g.name[0])};top:${U(g.name[1])};font-size:${PT(g.name[2])}">${pe(co.name)}</div>
+    <div class="ca" style="left:${U(g.addr[0])};top:${U(g.addr[1])};font-size:${PT(g.addr[2])}">${pe(co.address)}</div>
+  </div>`;
+}
+function copyLabel(left, top, txt, ref){
+  return `<div class="pco" style="left:${U(left)};top:${U(top)}">${txt}</div>` +
+         (ref ? `<div class="pref" style="left:${U(left+200)};top:${U(top)}">Ref. No. ${pe(ref)}</div>` : '');
+}
+function hrsOf(l){ // used by reports
+  if(!l.time_from||!l.time_to) return null;
+  const t=s=>{const [h,m]=s.split(':').map(Number);return h*60+m;};
+  let m=t(l.time_to)-t(l.time_from); if(m<0) m+=1440; return Math.round(m/6)/10;
+}
+
+/* ---------- LEAVE OF ABSENCE FORM ---------- */
+function pLeave(d, top, copy){
+  const W=779, H=461, cols=[95,95,84,84,84,84,253], rh=102/7;
+  const s=sigs(d), req=d.req, rows=d.lines;
+  let body='';
+  for(let i=0;i<7;i++){
+    const l=rows[i]||{};
+    body+=`<tr style="height:${U(rh)}">
+      <td class="cell">${pe(l.leave_type||'')}</td>
+      <td class="cell">${l.leave_type? (l.with_pay?'With Pay':'Without Pay') : ''}</td>
+      <td class="cell">${pDate(l.date_from)}</td><td class="cell">${pDate(l.date_to)}</td>
+      <td class="cell">${pTime(l.time_from)}</td><td class="cell">${pTime(l.time_to)}</td>
+      ${i===0?`<td rowspan="7" class="wrap" style="font-size:6.6pt">${pe(req.reason||'')}</td>`:''}
+    </tr>`;
+  }
+  const lts = (d.leaveTypes||[]).filter(x=>x.active);
+  const legend = lts.map((x,i)=>
+      abs(560, 45+i*14.7, pe(x.code), `width:${U(48)};text-align:right;font-size:6.6pt`) +
+      abs(612, 45+i*14.7, '&nbsp;- '+pe(x.name), 'font-size:6.6pt')).join('');
+  const noteTop = Math.max(119, 45 + lts.length*14.7 + 14);
+  const foot = `<div class="co" style="height:${U(191)}">
+    ${abs(0,16,'Prepared by:',`width:${U(92)};text-align:right;font-size:6.6pt`)}
+    ${sv(s.prepared,190,251,43,7)}${sline(190,251,43,'Signature Over Printed Name of Employee',6.6)}
+    ${abs(0,74,'Approved by:',`width:${U(92)};text-align:right;font-size:7.2pt`)}
+    ${sv(s.approved,190,168,102,7)}${sline(190,168,102,'Immediate Head/Manager',6.6)}
+    ${abs(0,148,'Received by:',`width:${U(92)};text-align:right;font-size:6.6pt`)}
+    ${sv(s.received,190,168,176,7)}${sline(190,168,176,'Human Resources',6.6)}
+    ${abs(526,16,'Type of Leave',`width:${U(253)};text-align:center;font-weight:700;font-size:6.6pt`)}
+    ${abs(528,30,'Leave Legend:','font-size:6.6pt')}
+    ${legend}
+    ${abs(528,noteTop,'Note:','font-weight:700;font-size:6.6pt')}
+    ${abs(528,noteTop+27,'Please attach needed attachment/s, example:<br>Medical Certificate.','font-size:6.6pt;white-space:normal;width:'+U(240)+';line-height:1.35')}
+  </div>`;
+  return `<div class="pc" style="left:${U(78)};top:${U(top)};width:${U(W)};height:${U(H)};border:0">
+   <table>${colgroup(cols)}
+    <tr style="height:${U(46)}"><td colspan="7" style="padding:0;border-bottom:1px solid #000">${companyHead(d.company,{h:46,logo:[30,12,22],name:[97,8,7.6],addr:[99,32,6.5]})}</td></tr>
+    <tr style="height:${U(29)}"><td colspan="7" class="ptitle" style="font-size:10pt">${pe(d.form.title)}</td></tr>
+    <tr style="height:${U(30)}"><td colspan="4" class="lb">${lv('Name:',req.emp_name)}</td><td colspan="2" class="lb">${lv('Date Filed:',pDate(req.date_filed))}</td><td class="lb">${lv('Date Hired:',pDate(req.emp_date_hired))}</td></tr>
+    <tr style="height:${U(31)}"><td colspan="4" class="lb">${lv('Position/Job Title:',req.emp_position)}</td><td colspan="2" class="lb">${lv('Department:',req.emp_department)}</td><td></td></tr>
+    <tr class="hd" style="height:${U(17)}"><td rowspan="2">TYPE OF LEAVE</td><td rowspan="2" style="white-space:normal;line-height:1.15">WITH PAY/<br>WITHOUT PAY</td><td colspan="2" class="sp-l" style="font-size:7.5pt">DATE</td><td colspan="2" class="sp-l" style="font-size:7.5pt">TIME</td><td rowspan="2" style="font-size:8.5pt">REASON</td></tr>
+    <tr class="hd" style="height:${U(15)}"><td style="font-size:7pt">FROM</td><td style="font-size:7pt">TO</td><td style="font-size:7pt">FROM</td><td style="font-size:7pt">TO</td></tr>
+    ${body}
+    <tr style="height:${U(191)}"><td colspan="7" style="padding:0;vertical-align:top">${foot}</td></tr>
+   </table></div>
+   ${copyLabel(80, top+H+10, copy, req.ref_no)}`;
+}
+
+/* ---------- REQUEST FOR OVERTIME / UNDERTIME ---------- */
+function pOtUt(d, top, copy){
+  const W=645, H=484, s=sigs(d), req=d.req;
+  let grid='';
+  for(let i=0;i<10;i++){
+    const l=d.lines[i]||{};
+    grid+=`<tr style="height:${U(17)}"><td class="cell">${pDate(l.date_from)}</td><td class="cell">${pTime(l.time_from)}</td><td class="cell">${pTime(l.time_to)}</td><td style="font-size:6.8pt">${pe(l.reason||'')}</td></tr>`;
+  }
+  return `<div class="pc" style="left:${U(78)};top:${U(top)};width:${U(W)};height:${U(H)}">
+    ${companyHead(d.company,{logo:[44,16,32],name:[106,19,8.6],addr:[108,39,7.4]})}
+    <div class="ab ptitle" style="left:0;width:100%;top:${U(75)};font-size:12.5pt">${pe(d.form.title)}</div>
+    <table style="position:absolute;left:${U(34)};top:${U(105)};width:${U(581)}">${colgroup([265,316])}
+      <tr style="height:${U(36)}"><td class="lb" style="font-size:7.6pt">${lv('Name:',req.emp_name)}</td><td class="lb" style="font-size:7.6pt">${lv('Date Filed:',pDate(req.date_filed))}</td></tr>
+      <tr style="height:${U(36)}"><td class="lb" style="font-size:7.6pt">${lv('Position/Job Title:',req.emp_position)}</td><td class="lb" style="font-size:7.6pt">${lv('Department:',req.emp_department)}</td></tr>
+    </table>
+    <table style="position:absolute;left:${U(34)};top:${U(194)};width:${U(581)}">${colgroup([69,109,87,316])}
+      <tr class="hd" style="height:${U(17)}"><td style="font-size:7pt">DATE</td><td style="font-size:7pt">START TIME</td><td style="font-size:7pt">END TIME</td><td style="font-size:7pt">REASON/PURPOSE</td></tr>
+      ${grid}
+    </table>
+    ${abs(37,400,'Requested by:','font-weight:700;font-size:7.4pt')}
+    ${abs(231,400,'Approved by:','font-weight:700;font-size:7.4pt')}
+    ${abs(426,400,'Received by:','font-weight:700;font-size:7.4pt')}
+    ${sv(s.prepared,34,178,450,7.4)}${sline(34,178,450,'Signature Over Printed Name',7.4)}
+    ${sv(s.approved,228,180,450,7.4)}${sline(228,180,450,'Immediate Head/ Manager',7.4)}
+    ${sv(s.received,424,191,450,7.4)}${sline(424,191,450,'Human Resources',7.4)}
+  </div>
+  ${copyLabel(80, top+H+5, copy, req.ref_no)}`;
+}
+
+/* ---------- OFFICIAL BUSINESS ---------- */
+function pOB(d, top, copy){
+  const W=715, H=489, cols=[89,90,89,90,90,267], rh=108/7, s=sigs(d), req=d.req;
+  let body='';
+  for(let i=0;i<7;i++){
+    const l=d.lines[i]||{};
+    body+=`<tr style="height:${U(rh)}"><td class="cell">${pDate(l.date_from)}</td><td class="cell">${pDate(l.date_to)}</td><td class="cell">${pTime(l.time_from)}</td><td class="cell">${pTime(l.time_to)}</td><td class="cell">${pe(l.location||'')}</td><td>${pe(l.reason||'')}</td></tr>`;
+  }
+  const foot = `<div class="co" style="height:${U(204)}">
+    ${abs(0,2,'Prepared by:',`width:${U(87)};text-align:right;font-size:7pt`)}
+    ${sv(s.prepared,89,269,31,7)}${sline(89,269,31,'Signature Over Printed Name of Employee',7)}
+    ${abs(450,17,'Note:','font-weight:700;font-size:7pt')}
+    ${abs(494,32,'Please attach needed attachment/s.','font-size:7pt')}
+    ${abs(0,63,'Approved by:',`width:${U(87)};text-align:right;font-size:7.7pt`)}
+    ${sv(s.approved,89,179,93,7)}${sline(89,179,93,'Immediate Head/Manager',7)}
+    ${abs(0,143,'Received by:',`width:${U(87)};text-align:right;font-size:7pt`)}
+    ${sv(s.received,89,179,172,7)}${sline(89,179,172,'Human Resources',7)}
+  </div>`;
+  return `<div class="pc" style="left:${U(78)};top:${U(top)};width:${U(W)};height:${U(H)};border:0">
+   <table>${colgroup(cols)}
+    <tr style="height:${U(47)}"><td colspan="6" style="padding:0">${companyHead(d.company,{h:47,logo:[22,13,21],name:[92,8,7.6],addr:[94,32,6.6]})}</td></tr>
+    <tr style="height:${U(31)}"><td colspan="6" class="ptitle" style="font-size:13pt">${pe(d.form.title)}</td></tr>
+    <tr style="height:${U(32)}"><td colspan="4" class="lb" style="font-size:7pt">${lv('Name:',req.emp_name)}</td><td colspan="2" class="lb" style="font-size:7pt">${lv('Date Filed:',pDate(req.date_filed))}</td></tr>
+    <tr style="height:${U(32)}"><td colspan="4" class="lb" style="font-size:7pt">${lv('Position/Job Title:',req.emp_position)}</td><td colspan="2" class="lb" style="font-size:7pt">${lv('Department:',req.emp_department)}</td></tr>
+    <tr class="hd" style="height:${U(18)}"><td colspan="2" class="sp-l" style="font-size:9pt">DATE</td><td colspan="2" class="sp-l" style="font-size:9pt">TIME</td><td rowspan="2" style="font-size:9pt">LOCATION</td><td rowspan="2" style="font-size:9pt">REASON</td></tr>
+    <tr class="hd" style="height:${U(17)}"><td style="font-size:7.7pt">FROM</td><td style="font-size:7.7pt">TO</td><td style="font-size:7.7pt">FROM</td><td style="font-size:7.7pt">TO</td></tr>
+    ${body}
+    <tr style="height:${U(204)}"><td colspan="6" style="padding:0;vertical-align:top">${foot}</td></tr>
+   </table></div>
+   ${copyLabel(80, top+H+10, copy, req.ref_no)}`;
+}
+
+/* ---------- CERTIFICATE OF ATTENDANCE ---------- */
+function pCOA(d, top, copy){
+  const W=616, H=482, cols=[88,88,88,88,264], rh=107/7, s=sigs(d), req=d.req;
+  let body='';
+  for(let i=0;i<7;i++){
+    const l=d.lines[i]||{};
+    body+=`<tr style="height:${U(rh)}"><td class="cell">${pDate(l.date_from)}</td><td class="cell">${pDate(l.date_to)}</td><td class="cell">${pTime(l.time_from)}</td><td class="cell">${pTime(l.time_to)}</td><td>${pe(l.reason||'')}</td></tr>`;
+  }
+  const foot = `<div class="co" style="height:${U(199)}">
+    ${abs(0,16,'Prepared by:',`width:${U(85)};text-align:right;font-size:7pt`)}
+    ${sv(s.prepared,89,263,44,7)}${sline(89,263,44,'Signature Over Printed Name of Employee',7)}
+    ${abs(354,16,'Note:','font-weight:700;font-size:7pt')}
+    ${abs(397,31,'Please attach needed attachment/s.','font-size:7pt')}
+    ${abs(0,78,'Approved by:',`width:${U(85)};text-align:right;font-size:7.7pt`)}
+    ${sv(s.approved,89,175,106,7)}${sline(89,175,106,'Immediate Head/Manager',7)}
+    ${abs(0,156,'Received by:',`width:${U(85)};text-align:right;font-size:7pt`)}
+    ${sv(s.received,89,175,184,7)}${sline(89,175,184,'Human Resources',7)}
+  </div>`;
+  return `<div class="pc" style="left:${U(78)};top:${U(top)};width:${U(W)};height:${U(H)};border:0">
+   <table>${colgroup(cols)}
+    <tr style="height:${U(47)}"><td colspan="5" style="padding:0">${companyHead(d.company,{h:47,logo:[20,12,21],name:[90,8,7.6],addr:[92,32,6.6]})}</td></tr>
+    <tr style="height:${U(30)}"><td colspan="5" class="ptitle" style="font-size:13pt">${pe(d.form.title)}</td></tr>
+    <tr style="height:${U(32)}"><td colspan="4" class="lb" style="font-size:7pt">${lv('Name:',req.emp_name)}</td><td class="lb" style="font-size:7pt">${lv('Date Filed:',pDate(req.date_filed))}</td></tr>
+    <tr style="height:${U(32)}"><td colspan="4" class="lb" style="font-size:7pt">${lv('Position/Job Title:',req.emp_position)}</td><td class="lb" style="font-size:7pt">${lv('Department:',req.emp_department)}</td></tr>
+    <tr class="hd" style="height:${U(18)}"><td colspan="2" class="sp-l" style="font-size:9pt">DATE</td><td colspan="2" class="sp-l" style="font-size:9pt">TIME</td><td rowspan="2" style="font-size:9pt">REASON</td></tr>
+    <tr class="hd" style="height:${U(17)}"><td style="font-size:7.7pt">FROM</td><td style="font-size:7.7pt">TO</td><td style="font-size:7.7pt">FROM</td><td style="font-size:7.7pt">TO</td></tr>
+    ${body}
+    <tr style="height:${U(199)}"><td colspan="5" style="padding:0;vertical-align:top">${foot}</td></tr>
+   </table></div>
+   ${copyLabel(80, top+H+10, copy, req.ref_no)}`;
+}
+
+const PRINT_LAYOUT = {
+  LEAVE: { fn: pLeave, tops: [97, 587] },
+  OT:    { fn: pOtUt,  tops: [100, 618] },
+  UT:    { fn: pOtUt,  tops: [100, 618] },
+  OB:    { fn: pOB,    tops: [98, 619] },
+  COA:   { fn: pCOA,   tops: [98, 610] },
+};
+
+/* d = {req, lines, approvals, company, form, leaveTypes} -> one Letter page with HR Copy + Employee Copy */
+function buildPrintPage(d){
+  const L = PRINT_LAYOUT[d.req.form_code];
+  return `<div class="pp">${L.fn(d, L.tops[0], 'HR Copy')}${L.fn(d, L.tops[1], 'Employee Copy')}</div>`;
+}
+
+</script>
+<script>
+/* ===== HR Process Form System — single-page app on Supabase ===== */
+const SB_URL = 'https://emkcwukiqxnvcbhkjiqz.supabase.co';
+const SB_KEY = 'sb_publishable_u_qnmEI8oHI9Z_A0-Hht3Q_Yvaa7Ork';
+const sb = supabase.createClient(SB_URL, SB_KEY);
+const BUCKET = 'hrf-attachments';
+
+const S = { session:null, me:null, forms:[], leaveTypes:[], companies:[], depts:[], emps:[], routes:[], inboxCount:0 };
+const FORM_ICON = { LEAVE:'LV', OT:'OT', UT:'UT', OB:'OB', COA:'COA' };
+const FORM_HINT = {
+  LEAVE:'Vacation, sick, birthday and other leaves',
+  OT:'Work beyond regular hours',
+  UT:'Leave work before end of shift',
+  OB:'Work done outside the office',
+  COA:'Attendance not captured by biometrics',
+};
+const KIND_LABEL = { supervisor:'Immediate Head (supervisor)', dept_head:'Department Head', hr:'Human Resources (any HR user)', specific:'Specific person' };
+
+/* ---------- utils ---------- */
+const $ = (s, el=document) => el.querySelector(s);
+const $$ = (s, el=document) => [...el.querySelectorAll(s)];
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const isHR = () => S.me && ['hr','admin'].includes(S.me.role);
+const isAdmin = () => S.me && S.me.role === 'admin';
+const empName = id => (S.emps.find(e=>e.id===id)||{}).full_name || '';
+const formOf = code => S.forms.find(f=>f.code===code) || {code, name:code, title:code, max_rows:7};
+const today = () => new Date().toLocaleDateString('en-CA',{timeZone:'Asia/Manila'});
+const fmtD = s => s ? pDate(s) : '';
+const fmtTs = ts => ts ? new Date(ts).toLocaleString('en-US',{timeZone:'Asia/Manila',month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'}) : '';
+const pill = st => `<span class="pill st-${st}">${esc(st)}</span>`;
+function daysOf(l){ if(!l.date_from) return null; const a=new Date(l.date_from), b=new Date(l.date_to||l.date_from); return Math.round((b-a)/864e5)+1; }
+
+function toast(msg, err=false){ const d=document.createElement('div'); d.textContent=msg; if(err) d.className='err'; $('#toast').appendChild(d); setTimeout(()=>d.remove(), err?6000:3000); }
+function errMsg(e){ return (e && (e.message || e.error_description || e.details)) || String(e); }
+async function q(p){ const { data, error } = await p; if(error) throw error; return data; }
+
+function modal(html, onMount){
+  const bg=document.createElement('div'); bg.className='modal-bg';
+  bg.innerHTML=`<div class="modal">${html}</div>`;
+  document.body.appendChild(bg);
+  const close=()=>bg.remove();
+  bg.addEventListener('mousedown',e=>{ if(e.target===bg) close(); });
+  $$('[data-close]',bg).forEach(b=>b.onclick=close);
+  onMount && onMount(bg.firstElementChild, close);
+  return close;
+}
+function confirmBox(title, text, okLabel='Confirm', withRemarks=false, danger=false){
+  return new Promise(res=>{
+    modal(`<h3>${esc(title)}</h3><p>${text}</p>
+      ${withRemarks?`<label class="f">Remarks ${withRemarks==='req'?'(required)':'(optional)'}</label><textarea class="in" id="cb-rem"></textarea>`:''}
+      <div class="acts"><button class="btn" data-close>Cancel</button><button class="btn ${danger?'bad':'pri'}" id="cb-ok">${esc(okLabel)}</button></div>`,
+    (m, close)=>{
+      $('[data-close]',m).addEventListener('click',()=>res(null));
+      $('#cb-ok',m).onclick=()=>{
+        const r = withRemarks ? $('#cb-rem',m).value.trim() : '';
+        if(withRemarks==='req' && !r){ $('#cb-rem',m).focus(); return; }
+        close(); res({remarks:r});
+      };
+    });
+  });
+}
+
+/* ---------- auth ---------- */
+function renderLogin(mode='in', note=''){
+  document.body.classList.remove('app');
+  $('#app').innerHTML = `<div class="login"><div class="card">
+    <div class="brand"><img src="${window.DEFAULT_LOGO}" alt=""><div>HR Process Forms<small>Leave · OT · Undertime · OB · Attendance</small></div></div>
+    ${note?`<div class="msg info">${note}</div>`:''}
+    <div id="lmsg"></div>
+    ${mode==='reset' ? `
+      <label class="f">New password</label><input class="in" id="lp" type="password" autocomplete="new-password">
+      <div style="height:14px"></div><button class="btn pri" style="width:100%" id="lgo">Set new password</button>
+    ` : `
+      <label class="f">Company email</label><input class="in" id="le" type="email" autocomplete="username" placeholder="name@meatplus.ph">
+      ${mode!=='forgot'?`<div style="height:10px"></div><label class="f">Password</label><input class="in" id="lp" type="password" autocomplete="${mode==='up'?'new-password':'current-password'}">`:''}
+      <div style="height:14px"></div>
+      <button class="btn pri" style="width:100%;justify-content:center" id="lgo">${mode==='in'?'Sign in':mode==='up'?'Create account':'Send reset link'}</button>
+      <div class="row" style="justify-content:space-between;margin-top:14px;font-size:13px">
+        ${mode!=='in'?'<a href="#" data-m="in">Back to sign in</a>':'<a href="#" data-m="up">First time? Create account</a><a href="#" data-m="forgot">Forgot password?</a>'}
+      </div>`}
+  </div></div>`;
+  $$('[data-m]').forEach(a=>a.onclick=e=>{e.preventDefault();renderLogin(a.dataset.m);});
+  const msg=(t,k='err')=>$('#lmsg').innerHTML=`<div class="msg ${k}">${esc(t)}</div>`;
+  const go = async ()=>{
+    const btn=$('#lgo'); btn.disabled=true;
+    try{
+      const email=$('#le')?.value.trim().toLowerCase(), pw=$('#lp')?.value;
+      if(mode==='in'){ const {error}=await sb.auth.signInWithPassword({email,password:pw}); if(error) throw error; }
+      else if(mode==='up'){
+        if(!pw || pw.length<8) throw new Error('Use at least 8 characters for the password.');
+        const {data,error}=await sb.auth.signUp({email,password:pw,options:{emailRedirectTo:location.origin+location.pathname}});
+        if(error) throw error;
+        if(!data.session) msg('Account created. Check your email to confirm it, then sign in.','ok');
+      }
+      else if(mode==='forgot'){ const {error}=await sb.auth.resetPasswordForEmail(email,{redirectTo:location.origin+location.pathname}); if(error) throw error; msg('If that email has an account, a reset link was sent.','ok'); }
+      else if(mode==='reset'){ if(!pw||pw.length<8) throw new Error('Use at least 8 characters.'); const {error}=await sb.auth.updateUser({password:pw}); if(error) throw error; toast('Password updated'); S.recovery=false; location.hash='#/home'; boot(); }
+    }catch(e){ msg(errMsg(e).replace('Database error saving new user','Sign-up is limited to @meatplus.ph emails or emails registered by HR.')); }
+    finally{ btn.disabled=false; }
+  };
+  $('#lgo').onclick=go;
+  $$('.login input').forEach(i=>i.onkeydown=e=>{ if(e.key==='Enter') go(); });
+}
+
+async function boot(){
+  if(BOOTING) return; BOOTING=true; try{ await _boot(); } finally { BOOTING=false; }
+}
+async function _boot(){
+  const { data:{ session } } = await sb.auth.getSession();
+  S.session = session;
+  if(!session){ renderLogin(); return; }
+  $('#app').innerHTML = '<div class="login"><span class="spin"></span></div>';
+  try{
+    S.me = await q(sb.rpc('hrf_link_me'));
+  }catch(e){ S.me=null; toast(errMsg(e),true); }
+  if(!S.me){
+    $('#app').innerHTML = `<div class="login"><div class="card">
+      <div class="brand"><img src="${window.DEFAULT_LOGO}" alt=""><div>HR Process Forms</div></div>
+      <div class="msg info">You're signed in as <b>${esc(session.user.email)}</b>, but this email isn't registered in the HR forms system yet${session.user.email_confirmed_at?'':' (or your email is not yet confirmed)'}.<br><br>Please ask HR to add you as an employee using this exact email, then sign in again.</div>
+      <button class="btn" id="so" style="width:100%;justify-content:center">Sign out</button></div></div>`;
+    $('#so').onclick=()=>sb.auth.signOut();
+    return;
+  }
+  await loadRefs();
+  renderShell();
+  route();
+}
+
+async function loadRefs(){
+  const [forms, lts, cos, depts, emps, routes] = await Promise.all([
+    q(sb.from('hrf_form_types').select('*').order('sort')),
+    q(sb.from('hrf_leave_types').select('*').order('sort')),
+    q(sb.from('hrf_companies').select('*').order('code')),
+    q(sb.from('hrf_departments').select('*').order('name')),
+    q(sb.from('hrf_employees').select('*').order('full_name')),
+    q(sb.from('hrf_route_steps').select('*').eq('active',true).order('step_no')),
+  ]);
+  Object.assign(S, { forms, leaveTypes:lts, companies:cos, depts, emps, routes });
+}
+
+/* ---------- shell ---------- */
+function renderShell(){
+  const co = S.companies.find(c=>c.id===S.me.company_id) || {};
+  $('#app').innerHTML = `
+  <header class="topbar">
+    <button class="menu-btn" id="mb" aria-label="Menu">☰</button>
+    <div class="brand"><img src="${co.logo||window.DEFAULT_LOGO}" alt=""><div>HR Process Forms<small>${esc(co.name||'')}</small></div></div>
+    <div class="sp"></div>
+    <div class="who"><b>${esc(S.me.full_name)}</b><br><span>${esc(S.me.position||'')}${S.me.role!=='employee'?' · '+S.me.role.toUpperCase():''}</span></div>
+    <button class="btn sm" id="so">Sign out</button>
+  </header>
+  <div class="shell">
+    <nav class="side" id="side">
+      <a href="#/home" data-r="home">Home</a>
+      <h6>File a form</h6>
+      ${S.forms.filter(f=>f.active).map(f=>`<a href="#/file/${f.code}" data-r="file/${f.code}">${esc(f.name)}</a>`).join('')}
+      <h6>Requests</h6>
+      <a href="#/my" data-r="my">My requests</a>
+      <a href="#/inbox" data-r="inbox">For my approval <span class="badge hidden" id="ib"></span></a>
+      ${isHR()?`<h6>HR</h6>
+      <a href="#/reports" data-r="reports">All requests & reports</a>
+      <a href="#/admin/employees" data-r="admin/employees">Employees</a>
+      <a href="#/admin/departments" data-r="admin/departments">Departments</a>
+      <a href="#/admin/routes" data-r="admin/routes">Approval routes</a>
+      <a href="#/admin/leavetypes" data-r="admin/leavetypes">Leave types</a>
+      <a href="#/admin/companies" data-r="admin/companies">Companies</a>`:''}
+    </nav>
+    <main id="main"></main>
+  </div>`;
+  $('#so').onclick=()=>sb.auth.signOut();
+  $('#mb').onclick=()=>$('#side').classList.toggle('open');
+  refreshInboxCount();
+}
+
+async function refreshInboxCount(){
+  try{
+    const rows = await q(sb.from('hrf_approvals').select('id,assignee_id,approver_kind,hrf_requests!inner(status,employee_id)').eq('status','pending').eq('hrf_requests.status','pending'));
+    S.inboxCount = rows.filter(a=>mayAct(a, a.hrf_requests)).length;
+    const b=$('#ib'); if(b){ b.textContent=S.inboxCount; b.classList.toggle('hidden', !S.inboxCount); }
+  }catch(e){}
+}
+function mayAct(a, req){
+  if(a.status!=='pending') return false;
+  if(req && req.employee_id===S.me.id && !isAdmin()) return false;
+  return a.assignee_id===S.me.id || (a.approver_kind==='hr' && isHR());
+}
+
+/* ---------- router ---------- */
+window.addEventListener('hashchange', ()=>{ if(S.me) route(); });
+async function route(){
+  const h = location.hash.replace(/^#\/?/,'') || 'home';
+  const parts = h.split('/');
+  $$('#side a').forEach(a=>a.classList.toggle('on', h===a.dataset.r || (a.dataset.r!=='home' && h.startsWith(a.dataset.r+'/'))));
+  $('#side')?.classList.remove('open');
+  const m = $('#main'); if(!m) return;
+  m.innerHTML = '<span class="spin"></span>';
+  try{
+    if(parts[0]==='home') await vHome(m);
+    else if(parts[0]==='file') await vFile(m, parts[1], parts[2]);
+    else if(parts[0]==='my') await vList(m, 'my');
+    else if(parts[0]==='inbox') await vInbox(m);
+    else if(parts[0]==='req') await vReq(m, parts[1]);
+    else if(parts[0]==='reports' && isHR()) await vReports(m);
+    else if(parts[0]==='admin' && isHR()) await ({employees:vEmployees, departments:vDepts, routes:vRoutes, leavetypes:vLeaveTypes, companies:vCompanies}[parts[1]]||vHome)(m);
+    else await vHome(m);
+  }catch(e){ m.innerHTML = `<div class="msg err">${esc(errMsg(e))}</div>`; }
+  window.scrollTo(0,0);
+}
+
+/* ---------- home ---------- */
+async function vHome(m){
+  const mine = await q(sb.from('hrf_requests').select('id,ref_no,form_code,status,date_filed,created_at').eq('employee_id',S.me.id).order('created_at',{ascending:false}).limit(8));
+  await refreshInboxCount();
+  const cnt = st => mine.filter(r=>r.status===st).length;
+  m.innerHTML = `<h1>Hello, ${esc(S.me.full_name.split(' ')[0])}</h1><p class="sub">File an HR form or check the status of your requests.</p>
+  <div class="grid g5">${S.forms.filter(f=>f.active).map(f=>`<a class="tile" href="#/file/${f.code}"><div class="ic">${FORM_ICON[f.code]||f.code}</div><b>${esc(f.name)}</b><span>${esc(FORM_HINT[f.code]||'')}</span></a>`).join('')}</div>
+  <div class="grid g3" style="margin-top:14px">
+    <a class="stat" href="#/inbox"><div class="n">${S.inboxCount}</div><div class="l">Waiting for my approval</div></a>
+    <a class="stat" href="#/my"><div class="n">${cnt('pending')}</div><div class="l">My pending requests</div></a>
+    <a class="stat" href="#/my"><div class="n">${cnt('returned')}</div><div class="l">Returned to me for revision</div></a>
+  </div>
+  <div class="card" style="margin-top:14px"><h3>My recent requests</h3>${reqTable(mine.map(r=>({...r, emp_name:S.me.full_name})), false)}</div>`;
+}
+
+function reqTable(rows, showEmp=true){
+  if(!rows.length) return '<div class="empty">No requests yet.</div>';
+  return `<div class="tw"><table class="t"><thead><tr><th>Ref. No.</th><th>Form</th>${showEmp?'<th>Employee</th>':''}<th>Date filed</th><th>Status</th></tr></thead><tbody>
+  ${rows.map(r=>`<tr class="click" onclick="location.hash='#/req/${r.id}'"><td><b>${esc(r.ref_no)}</b></td><td>${esc(formOf(r.form_code).name)}</td>${showEmp?`<td>${esc(r.emp_name)}</td>`:''}<td>${fmtD(r.date_filed)}</td><td>${pill(r.status)}</td></tr>`).join('')}
+  </tbody></table></div>`;
+}
+
+/* ---------- file / resubmit ---------- */
+const COLS = {
+  LEAVE: ['leave_type','with_pay','date_from','date_to','time_from','time_to'],
+  OT:    ['date_from','time_from','time_to','reason'],
+  UT:    ['date_from','time_from','time_to','reason'],
+  OB:    ['date_from','date_to','time_from','time_to','location','reason'],
+  COA:   ['date_from','date_to','time_from','time_to','reason'],
+};
+const COL_LABEL = { leave_type:'Type of leave', with_pay:'With / without pay', date_from:'Date from', date_to:'Date to', time_from:'Time from', time_to:'Time to', location:'Location', reason:'Reason / purpose' };
+const COL_LABEL_OT = { date_from:'Date', time_from:'Start time', time_to:'End time', reason:'Reason / purpose' };
+
+async function vFile(m, code, editId){
+  const f = formOf(code);
+  if(!f || !COLS[code]) { m.innerHTML='<div class="msg err">Unknown form.</div>'; return; }
+  let lines=[{}], reason='', existing=null;
+  if(editId){
+    existing = await q(sb.from('hrf_requests').select('*').eq('id',editId).single());
+    if(existing.status!=='returned' || existing.employee_id!==S.me.id){ location.hash='#/req/'+editId; return; }
+    lines = await q(sb.from('hrf_request_lines').select('*').eq('request_id',editId).eq('rev',existing.rev).order('line_no'));
+    reason = existing.reason||'';
+  }
+  const cols = COLS[code];
+  const labels = (code==='OT'||code==='UT') ? COL_LABEL_OT : COL_LABEL;
+  const route = S.routes.filter(r=>r.form_code===code);
+  const me = S.emps.find(e=>e.id===S.me.id) || {};
+  const routeTxt = route.map(r=>{
+    let who = r.approver_kind==='supervisor' ? empName(me.supervisor_id) : r.approver_kind==='dept_head' ? empName((S.depts.find(d=>d.id===me.department_id)||{}).head_employee_id) : r.approver_kind==='specific' ? empName(r.approver_employee_id) : 'HR';
+    return `<b>${esc(r.label)}</b> ${esc(who|| '— (skipped: not set)')}`;
+  }).join(' &rarr; ');
+
+  const cell = (c, l) => {
+    const v = l[c] ?? '';
+    if(c==='leave_type') return `<select class="in" data-c="${c}"><option value="">—</option>${S.leaveTypes.filter(x=>x.active).map(x=>`<option value="${esc(x.code)}" ${v===x.code?'selected':''}>${esc(x.code)} – ${esc(x.name)}</option>`).join('')}</select>`;
+    if(c==='with_pay') return `<select class="in" data-c="${c}"><option value="true" ${v!==false?'selected':''}>With pay</option><option value="false" ${v===false?'selected':''}>Without pay</option></select>`;
+    if(c.startsWith('date')) return `<input class="in" type="date" data-c="${c}" value="${esc(v)}">`;
+    if(c.startsWith('time')) return `<input class="in" type="time" data-c="${c}" value="${esc(String(v).slice(0,5))}">`;
+    return `<input class="in" data-c="${c}" value="${esc(v)}" maxlength="${c==='location'?60:200}">`;
+  };
+  const rowHtml = l => `<tr>${cols.map(c=>`<td style="${c==='reason'?'min-width:220px':c==='leave_type'?'min-width:170px':'min-width:120px'}">${cell(c,l)}</td>`).join('')}<td class="calc" style="white-space:nowrap;color:var(--ink-3);font-size:12px"></td><td><button class="btn sm bad" data-del title="Remove row">✕</button></td></tr>`;
+
+  m.innerHTML = `<h1>${esc(f.title)}</h1><p class="sub">${existing?`Revising <b>${esc(existing.ref_no)}</b> — make your changes and resubmit.`:esc(FORM_HINT[code]||'')}</p>
+  <div class="card"><h3>Employee</h3>
+    <dl class="kv"><dt>Name</dt><dd>${esc(S.me.full_name)}</dd><dt>Position</dt><dd>${esc(S.me.position||'—')}</dd>
+    <dt>Department</dt><dd>${esc(S.me.department_name||'—')}</dd><dt>Company</dt><dd>${esc(S.me.company_name)}</dd>
+    <dt>Date filed</dt><dd>${fmtD(today())}</dd>${code==='LEAVE'?`<dt>Date hired</dt><dd>${fmtD(S.me.date_hired)||'—'}</dd>`:''}
+    <dt>Approval</dt><dd>${routeTxt||'<span style="color:var(--bad)">No route set — contact HR</span>'}</dd></dl>
+  </div>
+  <div class="card"><div class="row"><h3 style="margin:0">Details</h3><div class="sp"></div><span style="font-size:12px;color:var(--ink-3)">Up to ${f.max_rows} rows</span></div>
+    <div class="tw" style="margin-top:10px"><table class="t ed"><thead><tr>${cols.map(c=>`<th>${labels[c]}</th>`).join('')}<th>${code==='OT'||code==='UT'?'Hours':'Days'}</th><th></th></tr></thead><tbody id="rows">${lines.map(rowHtml).join('')}</tbody></table></div>
+    <button class="btn sm" id="addrow" style="margin-top:10px">+ Add row</button>
+    ${code==='LEAVE'?`<div style="margin-top:14px"><label class="f">Reason</label><textarea class="in" id="reason" maxlength="500">${esc(reason)}</textarea></div>`:''}
+  </div>
+  <div class="card"><h3>Attachments</h3>
+    <p style="margin:0 0 8px;font-size:13px;color:var(--ink-3)">Please attach needed attachment/s${code==='LEAVE'?', example: Medical Certificate':''}. PDF or images, max 10 MB each.</p>
+    <input type="file" id="files" multiple accept=".pdf,image/*,.doc,.docx,.xls,.xlsx">
+  </div>
+  <div class="row" style="margin-top:16px"><div class="sp"></div><a class="btn" href="${existing?'#/req/'+existing.id:'#/home'}">Cancel</a><button class="btn pri" id="submit">${existing?'Resubmit':'Submit'} for approval</button></div>`;
+
+  const tb = $('#rows');
+  const calc = () => $$('#rows tr').forEach(tr=>{
+    const g=c=>$(`[data-c="${c}"]`,tr)?.value||'';
+    const l={date_from:g('date_from'),date_to:g('date_to'),time_from:g('time_from'),time_to:g('time_to')};
+    let t='';
+    if(code==='OT'||code==='UT'){ const h=hrsOf(l); t=h!=null?h+' h':''; }
+    else { const d=daysOf(l); t = d && d>0 ? d+' d' : (d!==null&&d<=0?'⚠ dates':''); }
+    $('.calc',tr).textContent=t;
+  });
+  const wire = () => { $$('[data-del]',tb).forEach(b=>b.onclick=()=>{ if($$('#rows tr').length>1){ b.closest('tr').remove(); calc(); } }); $$('input,select',tb).forEach(i=>i.oninput=calc); };
+  wire(); calc();
+  $('#addrow').onclick=()=>{
+    if($$('#rows tr').length>=f.max_rows) return toast(`Maximum of ${f.max_rows} rows`,true);
+    const last=$$('#rows tr').pop(); const prev={};
+    if(last && code==='LEAVE'){ prev.leave_type=$('[data-c="leave_type"]',last).value; prev.with_pay=$('[data-c="with_pay"]',last).value==='true'; }
+    if(last && (code==='OT'||code==='UT')){ prev.time_from=$('[data-c="time_from"]',last).value; prev.time_to=$('[data-c="time_to"]',last).value; }
+    tb.insertAdjacentHTML('beforeend', rowHtml(prev)); wire(); calc();
+  };
+  $('#submit').onclick = async ()=>{
+    const out = $$('#rows tr').map(tr=>{ const o={}; $$('[data-c]',tr).forEach(i=>o[i.dataset.c]= i.dataset.c==='with_pay' ? i.value==='true' : i.value.trim()); return o; })
+      .filter(o=>o.date_from || o.date_to || o.reason || o.location);
+    if(!out.length) return toast('Please fill in at least one row.', true);
+    const files=[...$('#files').files];
+    const big=files.find(x=>x.size>10*1024*1024); if(big) return toast(`${big.name} is larger than 10 MB`,true);
+    const btn=$('#submit'); btn.disabled=true; btn.innerHTML='<span class="spin"></span> Submitting…';
+    try{
+      const id = await q(sb.rpc('hrf_submit',{ p_form_code:code, p_reason: code==='LEAVE'?$('#reason').value.trim():null, p_lines: out, p_request_id: existing?existing.id:null }));
+      await uploadFiles(id, files);
+      toast(existing?'Resubmitted':'Submitted for approval');
+      location.hash = '#/req/'+id;
+    }catch(e){ toast(errMsg(e), true); btn.disabled=false; btn.textContent=(existing?'Resubmit':'Submit')+' for approval'; }
+  };
+}
+
+async function uploadFiles(reqId, files){
+  for(const f of files){
+    const safe = f.name.replace(/[^\w.\-]+/g,'_').slice(-80);
+    const path = `${reqId}/${Date.now()}_${safe}`;
+    const up = await sb.storage.from(BUCKET).upload(path, f, { contentType: f.type || 'application/octet-stream' });
+    if(up.error){ toast(`Upload failed for ${f.name}: ${up.error.message}`, true); continue; }
+    const { error } = await sb.from('hrf_attachments').insert({ request_id:reqId, path, file_name:f.name, size_bytes:f.size });
+    if(error) toast(`Could not record ${f.name}: ${error.message}`, true);
+  }
+}
+
+/* ---------- lists ---------- */
+async function vList(m){
+  const rows = await q(sb.from('hrf_requests').select('*').eq('employee_id',S.me.id).order('created_at',{ascending:false}).limit(500));
+  m.innerHTML = `<h1>My requests</h1><p class="sub">Everything you've filed. Click a row to view, print, or revise.</p>
+  <div class="row" style="margin-bottom:10px"><select class="in" id="ff" style="max-width:220px"><option value="">All forms</option>${S.forms.map(f=>`<option value="${f.code}">${esc(f.name)}</option>`).join('')}</select>
+  <select class="in" id="fs" style="max-width:180px"><option value="">All statuses</option>${['pending','returned','approved','rejected','cancelled'].map(s=>`<option>${s}</option>`).join('')}</select></div>
+  <div id="lt"></div>`;
+  const draw=()=>{ const ff=$('#ff').value, fs=$('#fs').value; $('#lt').innerHTML=reqTable(rows.filter(r=>(!ff||r.form_code===ff)&&(!fs||r.status===fs)), false); };
+  $('#ff').onchange=$('#fs').onchange=draw; draw();
+}
+
+async function vInbox(m){
+  const rows = await q(sb.from('hrf_approvals').select('*, hrf_requests!inner(*)').eq('status','pending').eq('hrf_requests.status','pending'));
+  const mine = rows.filter(a=>mayAct(a, a.hrf_requests)).sort((a,b)=>a.hrf_requests.created_at.localeCompare(b.hrf_requests.created_at));
+  const ids = mine.map(a=>a.request_id);
+  const lines = ids.length ? await q(sb.from('hrf_request_lines').select('*').in('request_id', ids).order('line_no')) : [];
+  m.innerHTML = `<h1>For my approval</h1><p class="sub">Requests waiting on you. Open one to review details and attachments, or approve directly.</p>
+  ${!mine.length?'<div class="card empty">Nothing waiting for you. 🎉</div>':`
+  <div class="row" style="margin-bottom:10px"><label class="row" style="gap:6px;font-size:13px"><input type="checkbox" id="all"> Select all</label><div class="sp"></div><button class="btn ok" id="bulk" disabled>Approve selected</button></div>
+  <div class="tw"><table class="t"><thead><tr><th></th><th>Ref. No.</th><th>Employee</th><th>Form</th><th>Details</th><th>Filed</th><th>Your step</th><th></th></tr></thead><tbody>
+  ${mine.map(a=>{ const r=a.hrf_requests; const ls=lines.filter(l=>l.request_id===r.id && l.rev===r.rev);
+    return `<tr><td><input type="checkbox" class="sel" value="${r.id}"></td><td><a href="#/req/${r.id}"><b>${esc(r.ref_no)}</b></a></td><td>${esc(r.emp_name)}<br><small style="color:var(--ink-3)">${esc(r.emp_department||'')}</small></td><td>${esc(formOf(r.form_code).name)}</td>
+    <td style="font-size:12px">${ls.map(lineSummary).join('<br>')}</td><td>${fmtD(r.date_filed)}</td><td>${esc(a.label)}</td>
+    <td><a class="btn sm" href="#/req/${r.id}">Review</a></td></tr>`; }).join('')}
+  </tbody></table></div>`}`;
+  if(!mine.length) return;
+  const upd=()=>$('#bulk').disabled=!$$('.sel:checked').length;
+  $$('.sel').forEach(c=>c.onchange=upd);
+  $('#all').onchange=e=>{ $$('.sel').forEach(c=>c.checked=e.target.checked); upd(); };
+  $('#bulk').onclick=async()=>{
+    const sel=$$('.sel:checked').map(c=>c.value);
+    const ok=await confirmBox('Approve requests',`Approve ${sel.length} selected request(s)?`,'Approve',false); if(!ok) return;
+    let n=0; for(const id of sel){ try{ await q(sb.rpc('hrf_act',{p_request_id:id,p_action:'approve',p_remarks:null})); n++; }catch(e){ toast(errMsg(e),true); } }
+    toast(`${n} approved`); refreshInboxCount(); route();
+  };
+}
+function lineSummary(l){
+  const dr = l.date_to && l.date_to!==l.date_from ? `${fmtD(l.date_from)}–${fmtD(l.date_to)}` : fmtD(l.date_from);
+  const tr = l.time_from ? ` ${pTime(l.time_from)}–${pTime(l.time_to)}` : '';
+  return esc([l.leave_type ? `${l.leave_type}${l.with_pay===false?' (w/o pay)':''}` : '', dr + tr, l.location||'', l.reason||''].filter(Boolean).join(' · '));
+}
+
+/* ---------- request detail ---------- */
+async function loadReqData(id){
+  const req = await q(sb.from('hrf_requests').select('*').eq('id',id).single());
+  const [lines, approvals, acts, atts] = await Promise.all([
+    q(sb.from('hrf_request_lines').select('*').eq('request_id',id).eq('rev',req.rev).order('line_no')),
+    q(sb.from('hrf_approvals').select('*').eq('request_id',id).eq('rev',req.rev).order('step_no')),
+    q(sb.from('hrf_activity').select('*').eq('request_id',id).order('id')),
+    q(sb.from('hrf_attachments').select('*').eq('request_id',id).eq('active',true).order('created_at')),
+  ]);
+  const company = S.companies.find(c=>c.id===req.company_id) || {name:'',address:''};
+  return { req, lines, approvals, acts, atts, company, form: formOf(req.form_code), leaveTypes: S.leaveTypes };
+}
+
+async function vReq(m, id){
+  const d = await loadReqData(id);
+  const { req, lines, approvals, acts, atts } = d;
+  const cols = COLS[req.form_code], labels = (req.form_code==='OT'||req.form_code==='UT') ? COL_LABEL_OT : COL_LABEL;
+  const cur = approvals.find(a=>a.status==='pending');
+  const canAct = req.status==='pending' && cur && mayAct(cur, req);
+  const own = req.employee_id===S.me.id;
+  const canCancel = (own && ['pending','returned'].includes(req.status)) || (isHR() && req.status!=='cancelled');
+  const canAttach = (own || isHR()) && ['pending','returned'].includes(req.status);
+  const fmtCell = (c,l) => c==='with_pay' ? (l.with_pay?'With pay':'Without pay') : c.startsWith('date') ? fmtD(l[c]) : c.startsWith('time') ? pTime(l[c]) : c==='leave_type' ? `${esc(l.leave_type)} – ${esc((S.leaveTypes.find(x=>x.code===l.leave_type)||{}).name||'')}` : esc(l[c]||'');
+
+  m.innerHTML = `<div class="row"><div><h1>${esc(d.form.title)}</h1><p class="sub" style="margin:0">${esc(req.ref_no)} · filed ${fmtD(req.date_filed)}${req.rev>1?` · revision ${req.rev}`:''}</p></div><div class="sp"></div>${pill(req.status)}</div>
+  <div class="row" style="margin:14px 0">
+    <button class="btn" id="print">🖨 Print form</button>
+    ${own && req.status==='returned'?`<a class="btn pri" href="#/file/${req.form_code}/${req.id}">Edit & resubmit</a>`:''}
+    ${canCancel?`<button class="btn bad" id="cancel">Cancel request</button>`:''}
+    <div class="sp"></div>
+    ${canAct?`<button class="btn bad" id="reject">Reject</button><button class="btn" id="return">Return for revision</button><button class="btn ok" id="approve">Approve</button>`:''}
+  </div>
+  <div class="grid" style="align-items:start;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr)" id="dgrid">
+    <div>
+      <div class="card"><h3>Employee</h3><dl class="kv"><dt>Name</dt><dd>${esc(req.emp_name)}</dd><dt>Position</dt><dd>${esc(req.emp_position||'—')}</dd><dt>Department</dt><dd>${esc(req.emp_department||'—')}</dd><dt>Company</dt><dd>${esc(d.company.name)}</dd>${req.form_code==='LEAVE'?`<dt>Date hired</dt><dd>${fmtD(req.emp_date_hired)||'—'}</dd>`:''}</dl></div>
+      <div class="card"><h3>Details</h3><div class="tw"><table class="t"><thead><tr>${cols.map(c=>`<th>${labels[c]}</th>`).join('')}<th>${req.form_code==='OT'||req.form_code==='UT'?'Hours':'Days'}</th></tr></thead>
+        <tbody>${lines.map(l=>`<tr>${cols.map(c=>`<td>${fmtCell(c,l)}</td>`).join('')}<td class="num">${req.form_code==='OT'||req.form_code==='UT'?(hrsOf(l)??''):(daysOf(l)??'')}</td></tr>`).join('')}</tbody></table></div>
+        ${req.reason?`<div style="margin-top:12px"><label class="f">Reason</label><div>${esc(req.reason)}</div></div>`:''}
+      </div>
+      <div class="card"><h3>Attachments</h3>
+        ${atts.length?atts.map(a=>`<div class="row" style="padding:4px 0"><a href="#" data-att="${esc(a.path)}">📎 ${esc(a.file_name)}</a><small style="color:var(--ink-3)">${Math.ceil((a.size_bytes||0)/1024)} KB</small><div class="sp"></div>${(canAttach&&(a.uploaded_by===S.session.user.id||isHR()))?`<button class="btn sm bad" data-rm="${a.id}">Remove</button>`:''}</div>`).join(''):'<div style="color:var(--ink-3);font-size:13px">No attachments.</div>'}
+        ${canAttach?`<div style="margin-top:10px" class="row"><input type="file" id="more" multiple><button class="btn sm" id="upl">Upload</button></div>`:''}
+      </div>
+    </div>
+    <div>
+      <div class="card"><h3>Approval</h3><div class="steps">
+        <div class="step approved"><div class="dot">✓</div><div><b>Prepared by</b> — ${esc(req.emp_name)}<br><small>${fmtTs(req.created_at)}</small></div></div>
+        ${approvals.map(a=>`<div class="step ${a.status}"><div class="dot">${a.status==='approved'?'✓':a.status==='pending'?'…':['rejected','returned'].includes(a.status)?'✕':a.step_no}</div>
+          <div><b>${esc(a.label)}</b> — ${esc(a.acted_by_name || (a.approver_kind==='hr'?'Human Resources':empName(a.assignee_id)) || '—')} ${pill(a.status)}
+          <br><small>${esc(KIND_LABEL[a.approver_kind]||'')}${a.acted_at?' · '+fmtTs(a.acted_at):''}</small>${a.remarks?`<div style="font-size:13px;margin-top:3px">“${esc(a.remarks)}”</div>`:''}</div></div>`).join('')}
+      </div></div>
+      <div class="card"><h3>History</h3><div class="log">${acts.map(x=>`<div><b>${esc(x.action.replace('Approved (Received by)','Received by HR').replace('Approved (Approved by)','Approved'))}</b> — ${esc(x.actor_name||'')} <span style="color:var(--ink-3)">· ${fmtTs(x.created_at)}</span>${x.remarks?`<br>“${esc(x.remarks)}”`:''}</div>`).join('')}</div></div>
+    </div>
+  </div>`;
+
+  $('#print').onclick=()=>printData([d]);
+  $$('[data-att]').forEach(a=>a.onclick=async e=>{ e.preventDefault(); const {data,error}=await sb.storage.from(BUCKET).createSignedUrl(a.dataset.att, 300); if(error) return toast(error.message,true); window.open(data.signedUrl,'_blank'); });
+  $$('[data-rm]').forEach(b=>b.onclick=async()=>{ if(!await confirmBox('Remove attachment','Remove this attachment from the request?','Remove',false,true)) return; try{ await q(sb.from('hrf_attachments').update({active:false}).eq('id',b.dataset.rm)); route(); }catch(e){ toast(errMsg(e),true);} });
+  $('#upl') && ($('#upl').onclick=async()=>{ const fs=[...$('#more').files]; if(!fs.length) return; const big=fs.find(x=>x.size>10*1024*1024); if(big) return toast(`${big.name} is larger than 10 MB`,true); await uploadFiles(req.id, fs); toast('Uploaded'); route(); });
+  const act = async (action, title, label, rem) => {
+    const r = await confirmBox(title, `${esc(req.ref_no)} — ${esc(req.emp_name)}`, label, rem, action!=='approve'); if(!r) return;
+    try{ await q(sb.rpc('hrf_act',{p_request_id:req.id,p_action:action,p_remarks:r.remarks||null})); toast('Done'); refreshInboxCount(); route(); }catch(e){ toast(errMsg(e),true); }
+  };
+  $('#approve') && ($('#approve').onclick=()=>act('approve','Approve request','Approve','opt'));
+  $('#return') && ($('#return').onclick=()=>act('return','Return for revision','Return','req'));
+  $('#reject') && ($('#reject').onclick=()=>act('reject','Reject request','Reject','req'));
+  $('#cancel') && ($('#cancel').onclick=async()=>{ const r=await confirmBox('Cancel request','This cannot be undone.','Cancel request','opt',true); if(!r) return; try{ await q(sb.rpc('hrf_cancel',{p_request_id:req.id,p_remarks:r.remarks||null})); toast('Cancelled'); route(); }catch(e){ toast(errMsg(e),true);} });
+}
+
+/* ---------- printing ---------- */
+function printData(list){
+  const root = $('#print-root');
+  root.innerHTML = list.map(buildPrintPage).join('');
+  const imgs = $$('img', root);
+  Promise.all(imgs.map(i=>i.complete?1:new Promise(r=>{i.onload=i.onerror=r;}))).then(()=>{ window.print(); });
+}
+window.addEventListener('afterprint', ()=>{ $('#print-root').innerHTML=''; });
+
+/* ---------- HR: reports ---------- */
+async function vReports(m){
+  const first = today().slice(0,8)+'01';
+  m.innerHTML = `<h1>All requests & reports</h1><p class="sub">Filter, review, export to Excel (CSV), or batch-print forms.</p>
+  <div class="card"><div class="grid g4">
+    <div><label class="f">Filed from</label><input class="in" type="date" id="r-from" value="${first}"></div>
+    <div><label class="f">Filed to</label><input class="in" type="date" id="r-to" value="${today()}"></div>
+    <div><label class="f">Form</label><select class="in" id="r-form"><option value="">All</option>${S.forms.map(f=>`<option value="${f.code}">${esc(f.name)}</option>`).join('')}</select></div>
+    <div><label class="f">Status</label><select class="in" id="r-st"><option value="">All</option>${['pending','returned','approved','rejected','cancelled'].map(s=>`<option>${s}</option>`).join('')}</select></div>
+    <div><label class="f">Company</label><select class="in" id="r-co"><option value="">All</option>${S.companies.map(c=>`<option value="${c.id}">${esc(c.code)} – ${esc(c.name)}</option>`).join('')}</select></div>
+    <div><label class="f">Department</label><input class="in" id="r-dept" placeholder="contains…"></div>
+    <div><label class="f">Employee</label><input class="in" id="r-emp" placeholder="name contains…"></div>
+    <div style="display:flex;align-items:end;gap:8px"><button class="btn pri" id="r-go">Search</button></div>
+  </div></div>
+  <div class="row" style="margin:14px 0 10px"><b id="r-count"></b><div class="sp"></div><button class="btn" id="r-csv" disabled>⬇ Export CSV</button><button class="btn" id="r-print" disabled>🖨 Print selected</button></div>
+  <div id="r-out"></div>`;
+  let data=[];
+  const run = async()=>{
+    $('#r-out').innerHTML='<span class="spin"></span>';
+    let qq = sb.from('hrf_requests').select('*, hrf_request_lines(*), hrf_approvals(*)').gte('date_filed',$('#r-from').value||'2000-01-01').lte('date_filed',$('#r-to').value||'2999-12-31').order('date_filed',{ascending:false}).order('ref_no',{ascending:false}).limit(2000);
+    if($('#r-form').value) qq=qq.eq('form_code',$('#r-form').value);
+    if($('#r-st').value) qq=qq.eq('status',$('#r-st').value);
+    if($('#r-co').value) qq=qq.eq('company_id',$('#r-co').value);
+    if($('#r-dept').value.trim()) qq=qq.ilike('emp_department','%'+$('#r-dept').value.trim()+'%');
+    if($('#r-emp').value.trim()) qq=qq.ilike('emp_name','%'+$('#r-emp').value.trim()+'%');
+    try{ data = await q(qq); }catch(e){ $('#r-out').innerHTML=`<div class="msg err">${esc(errMsg(e))}</div>`; return; }
+    data.forEach(r=>{ r.lines=(r.hrf_request_lines||[]).filter(l=>l.rev===r.rev).sort((a,b)=>a.line_no-b.line_no); r.appr=(r.hrf_approvals||[]).filter(a=>a.rev===r.rev).sort((a,b)=>a.step_no-b.step_no); });
+    $('#r-count').textContent = `${data.length} request(s)`;
+    $('#r-csv').disabled = !data.length;
+    $('#r-out').innerHTML = !data.length ? '<div class="card empty">No requests match.</div>' : `<div class="tw"><table class="t"><thead><tr><th><input type="checkbox" id="r-all"></th><th>Ref. No.</th><th>Form</th><th>Employee</th><th>Department</th><th>Details</th><th>Filed</th><th>Status</th></tr></thead><tbody>
+      ${data.map(r=>`<tr><td><input type="checkbox" class="r-sel" value="${r.id}"></td><td><a href="#/req/${r.id}"><b>${esc(r.ref_no)}</b></a></td><td>${esc(formOf(r.form_code).name)}</td><td>${esc(r.emp_name)}</td><td>${esc(r.emp_department||'')}</td><td style="font-size:12px">${r.lines.map(lineSummary).join('<br>')}</td><td>${fmtD(r.date_filed)}</td><td>${pill(r.status)}</td></tr>`).join('')}
+      </tbody></table></div>`;
+    const upd=()=>$('#r-print').disabled=!$$('.r-sel:checked').length;
+    $$('.r-sel').forEach(c=>c.onchange=upd);
+    $('#r-all').onchange=e=>{ $$('.r-sel').forEach(c=>c.checked=e.target.checked); upd(); };
+    upd();
+  };
+  $('#r-go').onclick=run;
+  $('#r-csv').onclick=()=>{
+    const H=['Ref No','Form','Status','Date Filed','Employee','Company','Department','Position','Row','Leave Type','With Pay','Date From','Date To','Time From','Time To','Days','Hours','Location','Reason','Approved By','Approved At','Received By','Received At'];
+    const out=[H];
+    data.forEach(r=>{
+      const co=(S.companies.find(c=>c.id===r.company_id)||{}).code||'';
+      const ap=r.appr.filter(a=>a.print_slot==='approved'&&a.status==='approved').pop(), rc=r.appr.filter(a=>a.print_slot==='received'&&a.status==='approved').pop();
+      (r.lines.length?r.lines:[{}]).forEach(l=>out.push([r.ref_no,formOf(r.form_code).name,r.status,r.date_filed,r.emp_name,co,r.emp_department||'',r.emp_position||'',l.line_no||'',l.leave_type||'',l.leave_type?(l.with_pay?'Yes':'No'):'',l.date_from||'',l.date_to||'',(l.time_from||'').slice(0,5),(l.time_to||'').slice(0,5),
+        ['OT','UT'].includes(r.form_code)?'':(daysOf(l)??''), ['OT','UT'].includes(r.form_code)?(hrsOf(l)??''):'', l.location||'', r.form_code==='LEAVE'?(r.reason||''):(l.reason||''),
+        ap?.acted_by_name||'', ap?.acted_at?fmtTs(ap.acted_at):'', rc?.acted_by_name||'', rc?.acted_at?fmtTs(rc.acted_at):'']));
+    });
+    const csv = '﻿'+out.map(r=>r.map(v=>{ v=String(v??''); return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v; }).join(',')).join('\r\n');
+    const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'})); a.download=`hr-forms_${$('#r-from').value}_${$('#r-to').value}.csv`; a.click();
+  };
+  $('#r-print').onclick=()=>{
+    const sel=new Set($$('.r-sel:checked').map(c=>c.value));
+    printData(data.filter(r=>sel.has(r.id)).map(r=>({ req:r, lines:r.lines, approvals:r.appr, company:S.companies.find(c=>c.id===r.company_id)||{}, form:formOf(r.form_code), leaveTypes:S.leaveTypes })));
+  };
+  run();
+}
+
+/* ---------- HR: employees ---------- */
+async function vEmployees(m){
+  await loadRefs();
+  m.innerHTML = `<div class="row"><div><h1>Employees</h1><p class="sub" style="margin:0">Employees sign in with the email listed here. Set each person's immediate head so approvals route correctly.</p></div><div class="sp"></div>
+  <button class="btn" id="imp">Import CSV</button><button class="btn pri" id="add">+ Add employee</button></div>
+  <div class="row" style="margin:14px 0 10px"><input class="in" id="es" placeholder="Search name, email, position…" style="max-width:320px">
+  <select class="in" id="ec" style="max-width:240px"><option value="">All companies</option>${S.companies.map(c=>`<option value="${c.id}">${esc(c.code)} – ${esc(c.name)}</option>`).join('')}</select>
+  <label class="row" style="gap:6px;font-size:13px"><input type="checkbox" id="ei"> Show inactive</label></div>
+  <div id="el"></div>`;
+  const draw=()=>{
+    const s=$('#es').value.toLowerCase(), c=$('#ec').value, inact=$('#ei').checked;
+    const rows=S.emps.filter(e=>(inact||e.active)&&(!c||e.company_id===c)&&(!s||[e.full_name,e.email,e.position,e.emp_no].join(' ').toLowerCase().includes(s)));
+    $('#el').innerHTML = !rows.length?'<div class="card empty">No employees.</div>':`<div class="tw"><table class="t"><thead><tr><th>Name</th><th>Email</th><th>Company</th><th>Department</th><th>Position</th><th>Immediate head</th><th>Role</th><th>Login</th></tr></thead><tbody>
+    ${rows.map(e=>`<tr class="click" data-e="${e.id}" style="${e.active?'':'opacity:.5'}"><td><b>${esc(e.full_name)}</b>${e.emp_no?`<br><small style="color:var(--ink-3)">${esc(e.emp_no)}</small>`:''}</td><td>${esc(e.email||'')}</td><td>${esc((S.companies.find(c=>c.id===e.company_id)||{}).code||'')}</td><td>${esc((S.depts.find(d=>d.id===e.department_id)||{}).name||'')}</td><td>${esc(e.position)}</td><td>${esc(empName(e.supervisor_id))}</td><td>${e.role==='employee'?'':`<span class="pill st-returned">${e.role}</span>`}</td><td>${e.user_id?'<span class="pill st-approved">linked</span>':'<span class="pill st-waiting">not yet</span>'}</td></tr>`).join('')}
+    </tbody></table></div>`;
+    $$('[data-e]').forEach(tr=>tr.onclick=()=>empForm(S.emps.find(e=>e.id===tr.dataset.e)));
+  };
+  $('#es').oninput=$('#ec').onchange=$('#ei').onchange=draw; draw();
+  $('#add').onclick=()=>empForm({ company_id:S.me.company_id, active:true, role:'employee' });
+  $('#imp').onclick=importEmployees;
+}
+
+function empForm(e){
+  const deptOpts = cid => `<option value="">—</option>`+S.depts.filter(d=>d.company_id===cid&&d.active).map(d=>`<option value="${d.id}" ${d.id===e.department_id?'selected':''}>${esc(d.name)}</option>`).join('');
+  modal(`<h3>${e.id?'Edit':'Add'} employee</h3>
+  <div class="grid g2">
+    <div style="grid-column:1/-1"><label class="f">Full name *</label><input class="in" id="f-name" value="${esc(e.full_name||'')}"></div>
+    <div><label class="f">Email (login) *</label><input class="in" id="f-email" type="email" value="${esc(e.email||'')}"></div>
+    <div><label class="f">Employee no.</label><input class="in" id="f-no" value="${esc(e.emp_no||'')}"></div>
+    <div><label class="f">Company *</label><select class="in" id="f-co">${S.companies.map(c=>`<option value="${c.id}" ${c.id===e.company_id?'selected':''}>${esc(c.code)} – ${esc(c.name)}</option>`).join('')}</select></div>
+    <div><label class="f">Department</label><select class="in" id="f-dept">${deptOpts(e.company_id)}</select></div>
+    <div><label class="f">Position / job title</label><input class="in" id="f-pos" value="${esc(e.position||'')}"></div>
+    <div><label class="f">Date hired</label><input class="in" id="f-hired" type="date" value="${esc(e.date_hired||'')}"></div>
+    <div style="grid-column:1/-1"><label class="f">Immediate head / manager</label><select class="in" id="f-sup"><option value="">—</option>${S.emps.filter(x=>x.active&&x.id!==e.id).map(x=>`<option value="${x.id}" ${x.id===e.supervisor_id?'selected':''}>${esc(x.full_name)} — ${esc(x.position)}</option>`).join('')}</select></div>
+    <div><label class="f">Role</label><select class="in" id="f-role" ${isAdmin()?'':'disabled'}>${['employee','hr','admin'].map(r=>`<option ${r===e.role?'selected':''}>${r}</option>`).join('')}</select></div>
+    <div><label class="f">Status</label><select class="in" id="f-act"><option value="true" ${e.active!==false?'selected':''}>Active</option><option value="false" ${e.active===false?'selected':''}>Inactive</option></select></div>
+    ${e.user_id?`<div style="grid-column:1/-1;font-size:12px;color:var(--ink-3)">Login linked. <label><input type="checkbox" id="f-unlink"> Unlink login (e.g. if the email changed)</label></div>`:''}
+  </div>
+  <div class="acts"><button class="btn" data-close>Cancel</button><button class="btn pri" id="f-save">Save</button></div>`, (mm, close)=>{
+    $('#f-co',mm).onchange=ev=>{ e.department_id=null; $('#f-dept',mm).innerHTML=deptOpts(ev.target.value); };
+    $('#f-save',mm).onclick=async()=>{
+      const rec={ full_name:$('#f-name',mm).value.trim(), email:$('#f-email',mm).value.trim().toLowerCase()||null, emp_no:$('#f-no',mm).value.trim()||null,
+        company_id:$('#f-co',mm).value, department_id:$('#f-dept',mm).value||null, position:$('#f-pos',mm).value.trim(), date_hired:$('#f-hired',mm).value||null,
+        supervisor_id:$('#f-sup',mm).value||null, active:$('#f-act',mm).value==='true' };
+      if(isAdmin()) rec.role=$('#f-role',mm).value;
+      if($('#f-unlink',mm)?.checked) rec.user_id=null;
+      if(!rec.full_name||!rec.email) return toast('Name and email are required',true);
+      try{
+        if(e.id) await q(sb.from('hrf_employees').update(rec).eq('id',e.id));
+        else await q(sb.from('hrf_employees').insert(rec));
+        close(); toast('Saved'); await loadRefs(); route();
+      }catch(err){ toast(errMsg(err).replace('duplicate key value violates unique constraint "hrf_employees_email_uq"','That email is already used by another employee.'),true); }
+    };
+  });
+}
+
+function parseCSV(t){
+  const rows=[]; let r=[], f='', qt=false;
+  for(let i=0;i<t.length;i++){ const c=t[i];
+    if(qt){ if(c==='"'){ if(t[i+1]==='"'){f+='"';i++;} else qt=false; } else f+=c; }
+    else if(c==='"') qt=true; else if(c===','){ r.push(f); f=''; } else if(c==='\n'){ r.push(f); rows.push(r); r=[]; f=''; } else if(c!=='\r') f+=c; }
+  if(f||r.length){ r.push(f); rows.push(r); }
+  return rows.filter(x=>x.some(v=>v.trim()));
+}
+function importEmployees(){
+  modal(`<h3>Import employees (CSV)</h3>
+  <p style="font-size:13px">Columns (header row required): <code>full_name, email, emp_no, position, company_code, department, date_hired, supervisor_email</code>. Company codes: ${S.companies.map(c=>esc(c.code)).join(', ')}. Dates as YYYY-MM-DD. Existing employees (same email) are updated; new departments are created automatically.</p>
+  <button class="btn sm" id="tpl">Download template</button>
+  <div style="height:10px"></div><input type="file" id="csv" accept=".csv,text/csv"><div id="imsg" style="font-size:13px;margin-top:10px"></div>
+  <div class="acts"><button class="btn" data-close>Close</button><button class="btn pri" id="go" disabled>Import</button></div>`, (mm, close)=>{
+    let rows=[];
+    $('#tpl',mm).onclick=()=>{ const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob(['full_name,email,emp_no,position,company_code,department,date_hired,supervisor_email\r\nJuan Dela Cruz,juan.delacruz@meatplus.ph,MTC-001,Accounting Staff,MTC,Accounting,2022-03-01,maria.santos@meatplus.ph\r\n'],{type:'text/csv'})); a.download='employees_template.csv'; a.click(); };
+    $('#csv',mm).onchange=async ev=>{
+      const t=await ev.target.files[0].text(); const all=parseCSV(t.replace(/^﻿/,''));
+      const h=all.shift().map(x=>x.trim().toLowerCase());
+      rows=all.map(r=>Object.fromEntries(h.map((k,i)=>[k,(r[i]||'').trim()])));
+      const bad=rows.filter(r=>!r.full_name||!r.email||!S.companies.find(c=>c.code.toLowerCase()===(r.company_code||'').toLowerCase()));
+      $('#imsg',mm).innerHTML=`${rows.length} row(s) read.${bad.length?` <span style="color:var(--bad)">${bad.length} row(s) missing name/email or have an unknown company code — they will be skipped.</span>`:''}`;
+      $('#go',mm).disabled=!rows.length;
+    };
+    $('#go',mm).onclick=async()=>{
+      const btn=$('#go',mm); btn.disabled=true; let ok=0, fail=0; const errs=[];
+      for(const r of rows){
+        try{
+          const co=S.companies.find(c=>c.code.toLowerCase()===(r.company_code||'').toLowerCase()); if(!co||!r.full_name||!r.email) throw new Error('missing data');
+          let dept=null;
+          if(r.department){ dept=S.depts.find(d=>d.company_id===co.id&&d.name.toLowerCase()===r.department.toLowerCase());
+            if(!dept){ dept=await q(sb.from('hrf_departments').insert({company_id:co.id,name:r.department}).select().single()); S.depts.push(dept); } }
+          const rec={ full_name:r.full_name, email:r.email.toLowerCase(), emp_no:r.emp_no||null, position:r.position||'', company_id:co.id, department_id:dept?.id||null, date_hired:r.date_hired||null };
+          const ex=S.emps.find(e=>(e.email||'').toLowerCase()===rec.email);
+          if(ex) await q(sb.from('hrf_employees').update(rec).eq('id',ex.id)); else { const n=await q(sb.from('hrf_employees').insert({...rec,active:true}).select().single()); S.emps.push(n); }
+          ok++;
+        }catch(e){ fail++; errs.push(`${r.email||r.full_name}: ${errMsg(e)}`); }
+        $('#imsg',mm).textContent=`Imported ${ok}, failed ${fail}…`;
+      }
+      await loadRefs();
+      let sup=0;
+      for(const r of rows.filter(r=>r.supervisor_email)){
+        const e=S.emps.find(x=>(x.email||'').toLowerCase()===r.email.toLowerCase()), s=S.emps.find(x=>(x.email||'').toLowerCase()===r.supervisor_email.toLowerCase());
+        if(e&&s&&e.supervisor_id!==s.id){ try{ await q(sb.from('hrf_employees').update({supervisor_id:s.id}).eq('id',e.id)); sup++; }catch(x){ errs.push(`${r.email} supervisor: ${errMsg(x)}`);} }
+        else if(e&&!s) errs.push(`${r.email}: supervisor ${r.supervisor_email} not found`);
+      }
+      $('#imsg',mm).innerHTML=`<div class="msg ok">Done: ${ok} imported/updated, ${sup} supervisor link(s) set, ${fail} failed.</div>${errs.length?`<div class="msg err" style="max-height:140px;overflow:auto">${errs.map(esc).join('<br>')}</div>`:''}`;
+      await loadRefs(); route();
+    };
+  });
+}
+
+/* ---------- HR: departments ---------- */
+async function vDepts(m){
+  await loadRefs();
+  m.innerHTML = `<div class="row"><div><h1>Departments</h1><p class="sub" style="margin:0">Department head is used when an approval route includes a "Department Head" step.</p></div><div class="sp"></div><button class="btn pri" id="add">+ Add department</button></div>
+  <div style="height:14px"></div>
+  ${S.companies.map(c=>{ const ds=S.depts.filter(d=>d.company_id===c.id); return `<div class="card"><h3>${esc(c.code)} – ${esc(c.name)}</h3>${!ds.length?'<div style="color:var(--ink-3);font-size:13px">No departments.</div>':`<div class="tw"><table class="t"><thead><tr><th>Department</th><th>Head</th><th>Employees</th><th>Status</th></tr></thead><tbody>${ds.map(d=>`<tr class="click" data-d="${d.id}"><td><b>${esc(d.name)}</b></td><td>${esc(empName(d.head_employee_id))}</td><td>${S.emps.filter(e=>e.department_id===d.id&&e.active).length}</td><td>${d.active?'Active':'Inactive'}</td></tr>`).join('')}</tbody></table></div>`}</div>`; }).join('')}`;
+  const form = d => modal(`<h3>${d.id?'Edit':'Add'} department</h3>
+    <label class="f">Company</label><select class="in" id="d-co" ${d.id?'disabled':''}>${S.companies.map(c=>`<option value="${c.id}" ${c.id===d.company_id?'selected':''}>${esc(c.code)} – ${esc(c.name)}</option>`).join('')}</select>
+    <div style="height:10px"></div><label class="f">Name</label><input class="in" id="d-name" value="${esc(d.name||'')}">
+    <div style="height:10px"></div><label class="f">Department head</label><select class="in" id="d-head"><option value="">—</option>${S.emps.filter(e=>e.active).map(e=>`<option value="${e.id}" ${e.id===d.head_employee_id?'selected':''}>${esc(e.full_name)} — ${esc(e.position)}</option>`).join('')}</select>
+    <div style="height:10px"></div><label class="f">Status</label><select class="in" id="d-act"><option value="true">Active</option><option value="false" ${d.active===false?'selected':''}>Inactive</option></select>
+    <div class="acts"><button class="btn" data-close>Cancel</button><button class="btn pri" id="d-save">Save</button></div>`, (mm, close)=>{
+      $('#d-save',mm).onclick=async()=>{
+        const rec={ name:$('#d-name',mm).value.trim(), head_employee_id:$('#d-head',mm).value||null, active:$('#d-act',mm).value==='true' };
+        if(!rec.name) return toast('Name is required',true);
+        try{ if(d.id) await q(sb.from('hrf_departments').update(rec).eq('id',d.id)); else await q(sb.from('hrf_departments').insert({...rec, company_id:$('#d-co',mm).value})); close(); toast('Saved'); route(); }catch(e){ toast(errMsg(e),true); }
+      };
+    });
+  $('#add').onclick=()=>form({company_id:S.me.company_id});
+  $$('[data-d]').forEach(tr=>tr.onclick=()=>form(S.depts.find(d=>d.id===tr.dataset.d)));
+}
+
+/* ---------- HR: approval routes ---------- */
+async function vRoutes(m){
+  await loadRefs();
+  m.innerHTML = `<h1>Approval routes</h1><p class="sub">Steps run in order. "Approved by" and "Received by" print on the paper form's signature lines. Steps whose approver isn't set for an employee (e.g. no supervisor) are skipped automatically.</p>
+  ${S.forms.map(f=>`<div class="card" data-f="${f.code}"><div class="row"><h3 style="margin:0">${esc(f.name)}</h3><div class="sp"></div><button class="btn sm" data-add>+ Step</button><button class="btn sm pri" data-save>Save</button></div><div class="tw" style="margin-top:10px"><table class="t ed"><thead><tr><th>#</th><th>Approver</th><th>Specific person</th><th>Label</th><th>Prints on</th><th></th></tr></thead><tbody></tbody></table></div></div>`).join('')}`;
+  const stepRow = s => `<tr><td class="no"></td>
+    <td><select class="in" data-k="approver_kind">${Object.entries(KIND_LABEL).map(([k,v])=>`<option value="${k}" ${k===s.approver_kind?'selected':''}>${v}</option>`).join('')}</select></td>
+    <td><select class="in" data-k="approver_employee_id"><option value="">—</option>${S.emps.filter(e=>e.active).map(e=>`<option value="${e.id}" ${e.id===s.approver_employee_id?'selected':''}>${esc(e.full_name)}</option>`).join('')}</select></td>
+    <td><input class="in" data-k="label" value="${esc(s.label||'Approved by')}"></td>
+    <td><select class="in" data-k="print_slot"><option value="">(not printed)</option><option value="approved" ${s.print_slot==='approved'?'selected':''}>Approved by line</option><option value="received" ${s.print_slot==='received'?'selected':''}>Received by line</option></select></td>
+    <td><button class="btn sm bad" data-rm>✕</button></td></tr>`;
+  $$('[data-f]').forEach(card=>{
+    const code=card.dataset.f, tb=$('tbody',card);
+    const renum=()=>$$('tr',tb).forEach((tr,i)=>{ $('.no',tr).textContent=i+1; const k=$('[data-k="approver_kind"]',tr).value; $('[data-k="approver_employee_id"]',tr).disabled = k!=='specific'; });
+    const wire=()=>{ $$('[data-rm]',tb).forEach(b=>b.onclick=()=>{ b.closest('tr').remove(); renum(); }); $$('select',tb).forEach(s=>s.onchange=renum); };
+    tb.innerHTML = S.routes.filter(r=>r.form_code===code).map(stepRow).join(''); wire(); renum();
+    $('[data-add]',card).onclick=()=>{ tb.insertAdjacentHTML('beforeend', stepRow({approver_kind:'dept_head',label:'Approved by'})); wire(); renum(); };
+    $('[data-save]',card).onclick=async()=>{
+      const steps=$$('tr',tb).map(tr=>Object.fromEntries($$('[data-k]',tr).map(i=>[i.dataset.k,i.value])));
+      try{ await q(sb.rpc('hrf_save_route',{p_form_code:code,p_steps:steps})); toast(`${formOf(code).name} route saved`); await loadRefs(); }catch(e){ toast(errMsg(e),true); }
+    };
+  });
+}
+
+/* ---------- HR: leave types ---------- */
+async function vLeaveTypes(m){
+  await loadRefs();
+  m.innerHTML = `<div class="row"><div><h1>Leave types</h1><p class="sub" style="margin:0">Active types appear in the leave form dropdown and in the printed form's Leave Legend.</p></div><div class="sp"></div><button class="btn pri" id="add">+ Add leave type</button></div>
+  <div class="tw" style="margin-top:14px"><table class="t"><thead><tr><th>Code</th><th>Name</th><th>Order</th><th>Status</th></tr></thead><tbody>
+  ${S.leaveTypes.map(l=>`<tr class="click" data-l="${esc(l.code)}"><td><b>${esc(l.code)}</b></td><td>${esc(l.name)}</td><td>${l.sort}</td><td>${l.active?'Active':'Inactive'}</td></tr>`).join('')}</tbody></table></div>`;
+  const form=l=>modal(`<h3>${l.code?'Edit':'Add'} leave type</h3>
+    <div class="grid g2"><div><label class="f">Code</label><input class="in" id="l-code" maxlength="6" value="${esc(l.code||'')}" ${l.code?'disabled':''}></div><div><label class="f">Order</label><input class="in" id="l-sort" type="number" value="${l.sort??(S.leaveTypes.length+1)}"></div>
+    <div style="grid-column:1/-1"><label class="f">Name</label><input class="in" id="l-name" value="${esc(l.name||'')}"></div>
+    <div><label class="f">Status</label><select class="in" id="l-act"><option value="true">Active</option><option value="false" ${l.active===false?'selected':''}>Inactive</option></select></div></div>
+    <div class="acts"><button class="btn" data-close>Cancel</button><button class="btn pri" id="l-save">Save</button></div>`,(mm,close)=>{
+      $('#l-save',mm).onclick=async()=>{
+        const rec={ name:$('#l-name',mm).value.trim(), sort:+$('#l-sort',mm).value||0, active:$('#l-act',mm).value==='true' };
+        const code=$('#l-code',mm).value.trim().toUpperCase(); if(!code||!rec.name) return toast('Code and name are required',true);
+        try{ if(l.code) await q(sb.from('hrf_leave_types').update(rec).eq('code',l.code)); else await q(sb.from('hrf_leave_types').insert({...rec,code})); close(); toast('Saved'); route(); }catch(e){ toast(errMsg(e),true); }
+      };
+    });
+  $('#add').onclick=()=>form({});
+  $$('[data-l]').forEach(tr=>tr.onclick=()=>form(S.leaveTypes.find(l=>l.code===tr.dataset.l)));
+}
+
+/* ---------- HR: companies ---------- */
+async function vCompanies(m){
+  await loadRefs();
+  m.innerHTML = `<div class="row"><div><h1>Companies</h1><p class="sub" style="margin:0">Name, address and logo print on the form header for that company's employees.</p></div><div class="sp"></div>${isAdmin()?'<button class="btn pri" id="add">+ Add company</button>':''}</div>
+  <div class="grid g2" style="margin-top:14px">${S.companies.map(c=>`<div class="card click" data-c="${c.id}" style="cursor:pointer"><div class="row"><img src="${c.logo||window.DEFAULT_LOGO}" style="width:40px;height:40px;object-fit:contain"><div><b>${esc(c.name)}</b><br><small style="color:var(--ink-3)">${esc(c.code)} · ${esc(c.address||'(no address yet)')}</small></div></div>${c.logo?'':'<div style="font-size:12px;color:var(--ink-3);margin-top:8px">Using default logo</div>'}</div>`).join('')}</div>`;
+  const form=c=>modal(`<h3>${c.id?'Edit':'Add'} company</h3>
+    <div class="grid g2"><div><label class="f">Code</label><input class="in" id="c-code" value="${esc(c.code||'')}" ${c.id?'disabled':''}></div><div></div>
+    <div style="grid-column:1/-1"><label class="f">Name (as printed)</label><input class="in" id="c-name" value="${esc(c.name||'')}"></div>
+    <div style="grid-column:1/-1"><label class="f">Address (as printed)</label><input class="in" id="c-addr" value="${esc(c.address||'')}"></div>
+    <div style="grid-column:1/-1"><label class="f">Logo (PNG/JPG, resized automatically)</label><div class="row"><img id="c-prev" src="${c.logo||window.DEFAULT_LOGO}" style="width:48px;height:48px;object-fit:contain;border:1px solid var(--line);border-radius:6px"><input type="file" id="c-logo" accept="image/*"><button class="btn sm" id="c-def">Use default</button></div></div></div>
+    <div class="acts"><button class="btn" data-close>Cancel</button><button class="btn pri" id="c-save">Save</button></div>`,(mm,close)=>{
+      let logo=c.logo||null;
+      $('#c-def',mm).onclick=()=>{ logo=null; $('#c-prev',mm).src=window.DEFAULT_LOGO; };
+      $('#c-logo',mm).onchange=async ev=>{ const f=ev.target.files[0]; if(!f) return; logo=await resizeImg(f,240); $('#c-prev',mm).src=logo; };
+      $('#c-save',mm).onclick=async()=>{
+        const rec={ name:$('#c-name',mm).value.trim(), address:$('#c-addr',mm).value.trim(), logo };
+        if(!rec.name) return toast('Name is required',true);
+        try{ if(c.id) await q(sb.from('hrf_companies').update(rec).eq('id',c.id)); else await q(sb.from('hrf_companies').insert({...rec, code:$('#c-code',mm).value.trim().toUpperCase()})); close(); toast('Saved'); await loadRefs(); route(); }catch(e){ toast(errMsg(e),true); }
+      };
+    });
+  $('#add') && ($('#add').onclick=()=>form({}));
+  $$('[data-c]').forEach(el=>el.onclick=()=>form(S.companies.find(c=>c.id===el.dataset.c)));
+}
+function resizeImg(file, max){
+  return new Promise((res,rej)=>{ const img=new Image(); img.onload=()=>{ const s=Math.min(1,max/Math.max(img.width,img.height)); const cv=document.createElement('canvas'); cv.width=Math.round(img.width*s); cv.height=Math.round(img.height*s); cv.getContext('2d').drawImage(img,0,0,cv.width,cv.height); res(cv.toDataURL('image/png')); }; img.onerror=rej; img.src=URL.createObjectURL(file); });
+}
+
+/* ---------- start ---------- */
+let BOOTING=false;
+sb.auth.onAuthStateChange((event, session)=>{
+  if(event==='PASSWORD_RECOVERY'){ S.recovery=true; renderLogin('reset','Enter a new password for your account.'); return; }
+  if(event==='SIGNED_IN' && !S.me && !BOOTING && !S.recovery) setTimeout(boot,0);
+  if(event==='SIGNED_OUT'){ S.me=null; S.session=null; renderLogin(); }
+});
+boot();
+
+</script>
+</body></html>
