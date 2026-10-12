@@ -168,6 +168,12 @@ table.ed td{padding:5px 6px} table.ed .in{min-height:32px;padding:5px 7px}
 .sv{position:absolute;text-align:center;font-weight:700;white-space:nowrap;overflow:hidden}
 .sv i{font-weight:400;font-style:normal;font-size:.8em}
 .ptitle{font-weight:700;text-align:center;white-space:nowrap}
+.svimg{position:absolute;display:flex;justify-content:center;align-items:flex-end;pointer-events:none}
+.svimg img{max-width:100%;max-height:100%;object-fit:contain}
+/* signature pad */
+.sigpad{width:100%;height:180px;border:1px dashed var(--line,#ccc);border-radius:8px;background:#fff;touch-action:none;cursor:crosshair;display:block}
+.sigprev{height:48px;max-width:160px;object-fit:contain;background:#fff;border-radius:4px}
+.sigthumb{height:26px;max-width:110px;object-fit:contain;vertical-align:middle;background:#fff;border-radius:3px;margin-left:4px}
 
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -193,14 +199,17 @@ function sigs(d){
   const pick = slot => { const done = a.filter(x=>x.print_slot===slot && x.status==='approved'); return done[done.length-1]; };
   const ap = pick('approved'), rc = pick('received');
   return {
-    prepared: { name: d.req.emp_name, date: pDate(d.req.date_filed) },
-    approved: ap ? { name: ap.acted_by_name, date: pTs(ap.acted_at) } : null,
-    received: rc ? { name: rc.acted_by_name, date: pTs(rc.acted_at) } : null,
+    prepared: { name: d.req.emp_name, date: pDate(d.req.date_filed), sig: d.req.emp_signature },
+    approved: ap ? { name: ap.acted_by_name, date: pTs(ap.acted_at), sig: ap.acted_signature } : null,
+    received: rc ? { name: rc.acted_by_name, date: pTs(rc.acted_at), sig: rc.acted_signature } : null,
   };
 }
-function sv(v, left, width, lineTop, fs){
+/* printed name + date over the line; the e-signature sits just above, overlapping the name like a pen signature */
+function sv(v, left, width, lineTop, fs, sigH=30){
   if(!v || !v.name) return '';
-  return `<div class="sv" style="left:${U(left)};width:${U(width)};top:${U(lineTop-13)};font-size:${PT(fs)}">${pe(v.name)} <i>${pe(v.date||'')}</i></div>`;
+  const img = v.sig && /^data:image\/png;base64,/.test(v.sig)
+    ? `<div class="svimg" style="left:${U(left)};width:${U(width)};top:${U(lineTop-4-sigH)};height:${U(sigH)}"><img src="${v.sig}" alt=""></div>` : '';
+  return img + `<div class="sv" style="left:${U(left)};width:${U(width)};top:${U(lineTop-13)};font-size:${PT(fs)}">${pe(v.name)} <i>${pe(v.date||'')}</i></div>`;
 }
 function sline(left, width, top, caption, fs){
   return `<div class="sl" style="left:${U(left)};width:${U(width)};top:${U(top)};font-size:${PT(fs)}">${caption}</div>`;
@@ -320,7 +329,7 @@ function pOB(d, top, copy){
   }
   const foot = `<div class="co" style="height:${U(204)}">
     ${abs(0,2,'Prepared by:',`width:${U(87)};text-align:right;font-size:7pt`)}
-    ${sv(s.prepared,89,269,31,7)}${sline(89,269,31,'Signature Over Printed Name of Employee',7)}
+    ${sv(s.prepared,89,269,31,7,26)}${sline(89,269,31,'Signature Over Printed Name of Employee',7)}
     ${abs(450,17,'Note:','font-weight:700;font-size:7pt')}
     ${abs(494,32,'Please attach needed attachment/s.','font-size:7pt')}
     ${abs(0,63,'Approved by:',`width:${U(87)};text-align:right;font-size:7.7pt`)}
@@ -515,8 +524,104 @@ async function _boot(){
   }
   if(session.user.user_metadata?.hrf_must_change){ renderChangePw(true); return; }
   await loadRefs();
+  await loadMySig();
   renderShell();
   route();
+}
+
+/* ---------- e-signature ----------
+   Each user keeps one signature (private to them). When they submit a form or approve a step,
+   the database copies it onto that request/step, so the printout keeps the signature used at signing time. */
+async function loadMySig(){
+  try{ const r = await q(sb.from('hrf_signatures').select('image').eq('employee_id',S.me.id).maybeSingle()); S.mySig = r?.image || null; }
+  catch(e){ S.mySig = null; }
+}
+function refreshSigBadge(){ const b=$('#msig'); if(b) b.innerHTML='✍'+(S.mySig?'':' <span style="color:var(--bad,#c33)">•</span>'); }
+
+/* trim transparent edges, cap the size, return a PNG data URL (or null if blank) */
+function sigExport(src){
+  const w=src.width, h=src.height, px=src.getContext('2d').getImageData(0,0,w,h).data;
+  let x0=w, y0=h, x1=-1, y1=-1;
+  for(let y=0;y<h;y++) for(let x=0;x<w;x++){ if(px[(y*w+x)*4+3]>16){ if(x<x0)x0=x; if(x>x1)x1=x; if(y<y0)y0=y; if(y>y1)y1=y; } }
+  if(x1<0) return null;
+  const pad=6; x0=Math.max(0,x0-pad); y0=Math.max(0,y0-pad); x1=Math.min(w-1,x1+pad); y1=Math.min(h-1,y1+pad);
+  const cw=x1-x0+1, ch=y1-y0+1, k=Math.min(1, 600/cw, 200/ch);
+  const out=document.createElement('canvas'); out.width=Math.max(1,Math.round(cw*k)); out.height=Math.max(1,Math.round(ch*k));
+  out.getContext('2d').drawImage(src, x0,y0,cw,ch, 0,0,out.width,out.height);
+  return out.toDataURL('image/png');
+}
+/* photo/scan of a signature on white paper -> ink only, background made transparent */
+function sigFromImage(img){
+  const k=Math.min(1, 1200/img.width, 600/img.height);
+  const c=document.createElement('canvas'); c.width=Math.round(img.width*k); c.height=Math.round(img.height*k);
+  const g=c.getContext('2d'); g.drawImage(img,0,0,c.width,c.height);
+  const d=g.getImageData(0,0,c.width,c.height), p=d.data;
+  for(let i=0;i<p.length;i+=4){
+    const lum=0.299*p[i]+0.587*p[i+1]+0.114*p[i+2];
+    const a = lum>200 ? 0 : lum<120 ? 255 : Math.round((200-lum)/80*255);
+    p[i+3]=Math.min(p[i+3],a);
+  }
+  g.putImageData(d,0,0);
+  return sigExport(c);
+}
+
+/* returns a Promise<boolean>: true when a signature is saved */
+function sigDialog(reason=''){
+  return new Promise(res=>{
+    let done=false; const finish=v=>{ if(!done){ done=true; res(v); } };
+    modal(`<h3>My e-signature</h3>
+      ${reason?`<div class="msg info" style="margin-bottom:10px">${esc(reason)}</div>`:''}
+      <p style="margin-top:0">Sign inside the box with your mouse or finger, or upload a photo of your signature on white paper. It is printed automatically on the forms you file and the steps you approve.</p>
+      ${S.mySig?`<div class="row" style="margin-bottom:8px"><small style="color:var(--ink-3)">Current:</small><img class="sigprev" src="${S.mySig}" alt=""></div>`:''}
+      <canvas class="sigpad" id="sp-c"></canvas>
+      <div class="row" style="margin-top:8px;gap:8px">
+        <button class="btn sm" id="sp-clear">Clear</button>
+        <label class="btn sm" style="cursor:pointer">Upload image…<input type="file" id="sp-file" accept="image/*" hidden></label>
+        <div class="sp"></div>
+        ${S.mySig?'<button class="btn sm bad" id="sp-del">Remove signature</button>':''}
+      </div>
+      <div class="acts"><button class="btn" data-close>Cancel</button><button class="btn pri" id="sp-save">Save signature</button></div>`,
+    (m, close)=>{
+      $('[data-close]',m).addEventListener('click',()=>finish(false));
+      const bg=m.parentElement; new MutationObserver((_,o)=>{ if(!bg.isConnected){ o.disconnect(); finish(false); } }).observe(document.body,{childList:true});
+      const c=$('#sp-c',m), g=c.getContext('2d'); let uploaded=null, inked=false;
+      const fit=()=>{ const r=c.getBoundingClientRect(), dpr=window.devicePixelRatio||1; c.width=Math.round(r.width*dpr); c.height=Math.round(r.height*dpr); g.setTransform(dpr,0,0,dpr,0,0); g.lineCap='round'; g.lineJoin='round'; g.strokeStyle='#0b2a6b'; g.lineWidth=2.4; };
+      requestAnimationFrame(fit);
+      let drawing=false, last=null;
+      const pt=e=>{ const r=c.getBoundingClientRect(); return {x:e.clientX-r.left, y:e.clientY-r.top}; };
+      c.addEventListener('pointerdown',e=>{ if(uploaded){ uploaded=null; g.clearRect(0,0,c.width,c.height); } drawing=true; c.setPointerCapture(e.pointerId); last=pt(e); g.beginPath(); g.arc(last.x,last.y,1.1,0,Math.PI*2); g.fillStyle='#0b2a6b'; g.fill(); inked=true; });
+      c.addEventListener('pointermove',e=>{ if(!drawing) return; const p=pt(e); const mx=(last.x+p.x)/2, my=(last.y+p.y)/2; g.beginPath(); g.moveTo(last.x,last.y); g.quadraticCurveTo(last.x,last.y,mx,my); g.lineTo(p.x,p.y); g.stroke(); last=p; });
+      const up=()=>{ drawing=false; }; c.addEventListener('pointerup',up); c.addEventListener('pointercancel',up);
+      $('#sp-clear',m).onclick=()=>{ uploaded=null; inked=false; g.clearRect(0,0,c.width,c.height); };
+      $('#sp-file',m).onchange=ev=>{
+        const f=ev.target.files[0]; if(!f) return;
+        const rd=new FileReader(); rd.onload=()=>{ const im=new Image(); im.onload=()=>{
+          uploaded=sigFromImage(im); inked=false; g.clearRect(0,0,c.width,c.height);
+          if(!uploaded) return toast('No signature found in that image — use a dark pen on white paper.',true);
+          const pv=new Image(); pv.onload=()=>{ const r=c.getBoundingClientRect(); const k=Math.min((r.width-20)/pv.width,(r.height-20)/pv.height,1); const w=pv.width*k,h=pv.height*k; g.drawImage(pv,(r.width-w)/2,(r.height-h)/2,w,h); }; pv.src=uploaded;
+        }; im.src=rd.result; }; rd.readAsDataURL(f);
+      };
+      $('#sp-del',m) && ($('#sp-del',m).onclick=async()=>{
+        try{ await q(sb.from('hrf_signatures').delete().eq('employee_id',S.me.id)); S.mySig=null; refreshSigBadge(); toast('Signature removed'); done=true; res(false); close(); }
+        catch(e){ toast(errMsg(e),true); }
+      });
+      $('#sp-save',m).onclick=async()=>{
+        const img = uploaded || (inked ? sigExport(c) : null);
+        if(!img) return toast('Please sign in the box first.',true);
+        if(img.length>290000) return toast('That signature image is too large — try drawing it instead.',true);
+        const b=$('#sp-save',m); b.disabled=true;
+        try{
+          await q(sb.from('hrf_signatures').upsert({employee_id:S.me.id, image:img, updated_at:new Date().toISOString()}));
+          S.mySig=img; refreshSigBadge(); toast('Signature saved'); done=true; res(true); close();
+        }catch(e){ b.disabled=false; toast(errMsg(e),true); }
+      };
+    });
+  });
+}
+/* gate before signing actions: open the pad if the user has no signature yet */
+async function ensureSig(why){
+  if(S.mySig) return true;
+  return await sigDialog(why);
 }
 
 /* ---------- password change (forced on first login / after reset) ---------- */
@@ -642,6 +747,7 @@ function renderShell(){
     <div class="sp"></div>
     ${(S.me.companies||[]).length>1?`<select class="in" id="cosw" title="Switch company" style="max-width:230px;min-height:32px;padding:4px 8px;font-size:13px">${S.me.companies.map(c=>`<option value="${c.company_id}" ${c.company_id===S.me.company_id?'selected':''}>${esc(c.code)}${c.is_home?' (home)':''}${c.role==='hr'?' · HR':c.role==='admin'?' · Admin':''}</option>`).join('')}</select>`:''}
     <div class="who"><b>${esc(S.me.full_name)}</b><br><span>${esc(S.me.position||'')}${S.me.role!=='employee'?' · '+S.me.role.toUpperCase():''}</span></div>
+    <button class="btn sm" id="msig" title="My e-signature">✍${S.mySig?'':' <span style="color:var(--bad,#c33)">•</span>'}</button>
     <button class="btn sm" id="cpw" title="Change password">🔑</button>
     <button class="btn sm" id="so">Sign out</button>
   </header>
@@ -666,6 +772,7 @@ function renderShell(){
   </div>`;
   $('#so').onclick=()=>sb.auth.signOut();
   $('#cpw').onclick=()=>renderChangePw(false);
+  $('#msig').onclick=()=>sigDialog();
   $('#cosw') && ($('#cosw').onchange=async ev=>{
     try{ await q(sb.rpc('hrf_switch_company',{p_company:ev.target.value})); S.me=null; location.hash='#/home'; await boot(); toast('Switched to '+(S.me?.company_name||'company')); }
     catch(e){ toast(errMsg(e),true); }
@@ -813,6 +920,7 @@ async function vFile(m, code, editId){
     if(!out.length) return toast('Please fill in at least one row.', true);
     const files=[...$('#files').files];
     const big=files.find(x=>x.size>10*1024*1024); if(big) return toast(`${big.name} is larger than 10 MB`,true);
+    if(!await ensureSig('Set up your e-signature first. It will be signed on this form automatically when you submit.')) return;
     const btn=$('#submit'); btn.disabled=true; btn.innerHTML='<span class="spin"></span> Submitting…';
     try{
       const id = await q(sb.rpc('hrf_submit',{ p_form_code:code, p_reason: code==='LEAVE'?$('#reason').value.trim():null, p_lines: out, p_request_id: existing?existing.id:null }));
@@ -865,7 +973,8 @@ async function vInbox(m){
   $('#all').onchange=e=>{ $$('.sel').forEach(c=>c.checked=e.target.checked); upd(); };
   $('#bulk').onclick=async()=>{
     const sel=$$('.sel:checked').map(c=>c.value);
-    const ok=await confirmBox('Approve requests',`Approve ${sel.length} selected request(s)?`,'Approve',false); if(!ok) return;
+    if(!await ensureSig('Set up your e-signature first. It will be signed on the forms you approve.')) return;
+    const ok=await confirmBox('Approve requests',`Approve ${sel.length} selected request(s)? Your e-signature will be added to each form.`,'Approve',false); if(!ok) return;
     let n=0; for(const id of sel){ try{ await q(sb.rpc('hrf_act',{p_request_id:id,p_action:'approve',p_remarks:null})); n++; }catch(e){ toast(errMsg(e),true); } }
     toast(`${n} approved`); refreshInboxCount(); route();
   };
@@ -922,9 +1031,9 @@ async function vReq(m, id){
     </div>
     <div>
       <div class="card"><h3>Approval</h3><div class="steps">
-        <div class="step approved"><div class="dot">✓</div><div><b>Prepared by</b> — ${esc(req.emp_name)}<br><small>${fmtTs(req.created_at)}</small></div></div>
+        <div class="step approved"><div class="dot">✓</div><div><b>Prepared by</b> — ${esc(req.emp_name)}${req.emp_signature?`<img class="sigthumb" src="${req.emp_signature}" alt="signature">`:''}<br><small>${fmtTs(req.created_at)}</small></div></div>
         ${approvals.map(a=>`<div class="step ${a.status}"><div class="dot">${a.status==='approved'?'✓':a.status==='pending'?'…':['rejected','returned'].includes(a.status)?'✕':a.step_no}</div>
-          <div><b>${esc(a.label)}</b> — ${esc(a.acted_by_name || (a.approver_kind==='hr'?'Human Resources':empName(a.assignee_id)) || '—')} ${pill(a.status)}
+          <div><b>${esc(a.label)}</b> — ${esc(a.acted_by_name || (a.approver_kind==='hr'?'Human Resources':empName(a.assignee_id)) || '—')}${a.acted_signature?`<img class="sigthumb" src="${a.acted_signature}" alt="signature">`:''} ${pill(a.status)}
           <br><small>${esc(KIND_LABEL[a.approver_kind]||'')}${a.acted_at?' · '+fmtTs(a.acted_at):''}</small>${a.remarks?`<div style="font-size:13px;margin-top:3px">“${esc(a.remarks)}”</div>`:''}</div></div>`).join('')}
       </div></div>
       <div class="card"><h3>History</h3><div class="log">${acts.map(x=>`<div><b>${esc(x.action.replace('Approved (Received by)','Received by HR').replace('Approved (Approved by)','Approved'))}</b> — ${esc(x.actor_name||'')} <span style="color:var(--ink-3)">· ${fmtTs(x.created_at)}</span>${x.remarks?`<br>“${esc(x.remarks)}”`:''}</div>`).join('')}</div></div>
@@ -936,6 +1045,7 @@ async function vReq(m, id){
   $$('[data-rm]').forEach(b=>b.onclick=async()=>{ if(!await confirmBox('Remove attachment','Remove this attachment from the request?','Remove',false,true)) return; try{ await q(sb.from('hrf_attachments').update({active:false}).eq('id',b.dataset.rm)); route(); }catch(e){ toast(errMsg(e),true);} });
   $('#upl') && ($('#upl').onclick=async()=>{ const fs=[...$('#more').files]; if(!fs.length) return; const big=fs.find(x=>x.size>10*1024*1024); if(big) return toast(`${big.name} is larger than 10 MB`,true); await uploadFiles(req.id, fs); toast('Uploaded'); route(); });
   const act = async (action, title, label, rem) => {
+    if(action==='approve' && !await ensureSig('Set up your e-signature first. It will be signed on this form when you approve.')) return;
     const r = await confirmBox(title, `${esc(req.ref_no)} — ${esc(req.emp_name)}`, label, rem, action!=='approve'); if(!r) return;
     try{ await q(sb.rpc('hrf_act',{p_request_id:req.id,p_action:action,p_remarks:r.remarks||null})); toast('Done'); refreshInboxCount(); route(); }catch(e){ toast(errMsg(e),true); }
   };
@@ -946,6 +1056,21 @@ async function vReq(m, id){
 }
 
 /* ---------- printing ---------- */
+/* report lists leave the signature images out (they are large); fetch them only for the forms being printed */
+const REQ_COLS='id,ref_no,form_code,employee_id,company_id,emp_name,emp_position,emp_department,emp_date_hired,date_filed,reason,status,current_step,filed_by,created_at,updated_at,completed_at,rev';
+const APPR_COLS='id,request_id,step_no,label,print_slot,approver_kind,assignee_id,status,acted_by_id,acted_by_name,remarks,acted_at,rev';
+async function attachSigs(rows){
+  const ids=rows.map(r=>r.id);
+  for(let i=0;i<ids.length;i+=50){
+    const chunk=ids.slice(i,i+50);
+    const [rq, ap] = await Promise.all([
+      q(sb.from('hrf_requests').select('id,emp_signature').in('id',chunk)),
+      q(sb.from('hrf_approvals').select('id,acted_signature').in('request_id',chunk).eq('status','approved')),
+    ]);
+    const rs=new Map(rq.map(x=>[x.id,x.emp_signature])), as=new Map(ap.map(x=>[x.id,x.acted_signature]));
+    rows.filter(r=>chunk.includes(r.id)).forEach(r=>{ r.emp_signature=rs.get(r.id)||null; (r.appr||[]).forEach(a=>{ a.acted_signature=as.get(a.id)||null; }); });
+  }
+}
 function printData(list){
   const root = $('#print-root');
   root.innerHTML = list.map(buildPrintPage).join('');
@@ -973,7 +1098,7 @@ async function vReports(m){
   let data=[];
   const run = async()=>{
     $('#r-out').innerHTML='<span class="spin"></span>';
-    let qq = sb.from('hrf_requests').select('*, hrf_request_lines(*), hrf_approvals(*)').gte('date_filed',$('#r-from').value||'2000-01-01').lte('date_filed',$('#r-to').value||'2999-12-31').order('date_filed',{ascending:false}).order('ref_no',{ascending:false}).limit(2000);
+    let qq = sb.from('hrf_requests').select(`${REQ_COLS}, hrf_request_lines(*), hrf_approvals(${APPR_COLS})`).gte('date_filed',$('#r-from').value||'2000-01-01').lte('date_filed',$('#r-to').value||'2999-12-31').order('date_filed',{ascending:false}).order('ref_no',{ascending:false}).limit(2000);
     if($('#r-form').value) qq=qq.eq('form_code',$('#r-form').value);
     if($('#r-st').value) qq=qq.eq('status',$('#r-st').value);
     if($('#r-co').value) qq=qq.eq('company_id',$('#r-co').value);
@@ -1005,8 +1130,9 @@ async function vReports(m){
     const csv = '﻿'+out.map(r=>r.map(v=>{ v=String(v??''); return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v; }).join(',')).join('\r\n');
     const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'})); a.download=`hr-forms_${$('#r-from').value}_${$('#r-to').value}.csv`; a.click();
   };
-  $('#r-print').onclick=()=>{
+  $('#r-print').onclick=async()=>{
     const sel=new Set($$('.r-sel:checked').map(c=>c.value));
+    try{ await attachSigs(data.filter(r=>sel.has(r.id))); }catch(e){ toast('Signatures could not be loaded: '+errMsg(e),true); }
     printData(data.filter(r=>sel.has(r.id)).map(r=>({ req:r, lines:r.lines, approvals:r.appr, company:S.companies.find(c=>c.id===r.company_id)||{}, form:formOf(r.form_code), leaveTypes:S.leaveTypes })));
   };
   run();
