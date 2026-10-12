@@ -533,8 +533,8 @@ async function _boot(){
    Each user keeps one signature (private to them). When they submit a form or approve a step,
    the database copies it onto that request/step, so the printout keeps the signature used at signing time. */
 async function loadMySig(){
-  try{ const r = await q(sb.from('hrf_signatures').select('image').eq('employee_id',S.me.id).maybeSingle()); S.mySig = r?.image || null; }
-  catch(e){ S.mySig = null; }
+  try{ const r = await q(sb.from('hrf_signatures').select('image').eq('employee_id',S.me.id).maybeSingle()); S.mySig = r?.image || null; S.sigOff = false; }
+  catch(e){ S.mySig = null; S.sigOff = true; }   // signatures table not set up yet -> feature stays off, nothing is blocked
 }
 function refreshSigBadge(){ const b=$('#msig'); if(b) b.innerHTML='✍'+(S.mySig?'':' <span style="color:var(--bad,#c33)">•</span>'); }
 
@@ -620,7 +620,7 @@ function sigDialog(reason=''){
 }
 /* gate before signing actions: open the pad if the user has no signature yet */
 async function ensureSig(why){
-  if(S.mySig) return true;
+  if(S.mySig || S.sigOff) return true;
   return await sigDialog(why);
 }
 
@@ -747,7 +747,7 @@ function renderShell(){
     <div class="sp"></div>
     ${(S.me.companies||[]).length>1?`<select class="in" id="cosw" title="Switch company" style="max-width:230px;min-height:32px;padding:4px 8px;font-size:13px">${S.me.companies.map(c=>`<option value="${c.company_id}" ${c.company_id===S.me.company_id?'selected':''}>${esc(c.code)}${c.is_home?' (home)':''}${c.role==='hr'?' · HR':c.role==='admin'?' · Admin':''}</option>`).join('')}</select>`:''}
     <div class="who"><b>${esc(S.me.full_name)}</b><br><span>${esc(S.me.position||'')}${S.me.role!=='employee'?' · '+S.me.role.toUpperCase():''}</span></div>
-    <button class="btn sm" id="msig" title="My e-signature">✍${S.mySig?'':' <span style="color:var(--bad,#c33)">•</span>'}</button>
+    <button class="btn sm${S.sigOff?' hidden':''}" id="msig" title="My e-signature">✍${S.mySig?'':' <span style="color:var(--bad,#c33)">•</span>'}</button>
     <button class="btn sm" id="cpw" title="Change password">🔑</button>
     <button class="btn sm" id="so">Sign out</button>
   </header>
