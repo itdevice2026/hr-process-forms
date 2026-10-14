@@ -783,7 +783,7 @@ function renderShell(){
 
 async function refreshInboxCount(){
   try{
-    const rows = await q(sb.from('hrf_approvals').select('id,assignee_id,approver_kind,hrf_requests!inner(status,employee_id,company_id)').eq('status','pending').eq('hrf_requests.status','pending'));
+    const rows = await q(sb.from('hrf_approvals').select('id,status,assignee_id,approver_kind,hrf_requests!inner(status,employee_id,company_id)').eq('status','pending').eq('hrf_requests.status','pending'));
     S.inboxCount = rows.filter(a=>mayAct(a, a.hrf_requests)).length;
     const b=$('#ib'); if(b){ b.textContent=S.inboxCount; b.classList.toggle('hidden', !S.inboxCount); }
   }catch(e){}
