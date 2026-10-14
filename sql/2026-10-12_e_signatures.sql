@@ -17,6 +17,9 @@ grant select, insert, update, delete on public.hrf_signatures to authenticated;
 
 alter table public.hrf_requests  add column if not exists emp_signature text;
 alter table public.hrf_approvals add column if not exists acted_signature text;
+-- These tables use column-level SELECT grants; without these, select('*') fails for every user.
+grant select (emp_signature)   on public.hrf_requests  to authenticated;
+grant select (acted_signature) on public.hrf_approvals to authenticated;
 
 create or replace function public.hrf_stamp_request_sig() returns trigger
 language plpgsql security definer set search_path = public as $$
