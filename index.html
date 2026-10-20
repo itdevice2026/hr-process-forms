@@ -254,7 +254,7 @@ function pLeave(d, top, copy){
       <td class="cell">${pe(l.leave_type||'')}</td>
       <td class="cell">${l.leave_type? (l.with_pay?'With Pay':'Without Pay') : ''}</td>
       <td class="cell">${pDate(l.date_from)}</td><td class="cell">${pDate(l.date_to)}</td>
-      <td class="cell">${pTime(l.time_from)}</td><td class="cell">${pTime(l.time_to)}</td>
+      ${l.day_part && !l.time_from ? `<td colspan="2" class="cell">${l.day_part==='AM'?'1st Half - Morning':'2nd Half - Afternoon'}</td>` : `<td class="cell">${pTime(l.time_from)}${l.day_part?' ('+l.day_part+')':''}</td><td class="cell">${pTime(l.time_to)}</td>`}
       ${i===0?`<td rowspan="7" class="wrap" style="font-size:6.6pt">${pe(req.reason||'')}</td>`:''}
     </tr>`;
   }
@@ -430,7 +430,8 @@ const today = () => new Date().toLocaleDateString('en-CA',{timeZone:'Asia/Manila
 const fmtD = s => s ? pDate(s) : '';
 const fmtTs = ts => ts ? new Date(ts).toLocaleString('en-US',{timeZone:'Asia/Manila',month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'}) : '';
 const pill = st => `<span class="pill st-${st}">${esc(st)}</span>`;
-function daysOf(l){ if(!l.date_from) return null; const a=new Date(l.date_from), b=new Date(l.date_to||l.date_from); return Math.round((b-a)/864e5)+1; }
+const DAY_PART = { AM:'1st Half (AM)', PM:'2nd Half (PM)' };
+function daysOf(l){ if(!l.date_from) return null; if(l.day_part) return 0.5; const a=new Date(l.date_from), b=new Date(l.date_to||l.date_from); return Math.round((b-a)/864e5)+1; }
 
 function toast(msg, err=false){ const d=document.createElement('div'); d.textContent=msg; if(err) d.className='err'; $('#toast').appendChild(d); setTimeout(()=>d.remove(), err?6000:3000); }
 function errMsg(e){ return (e && (e.message || e.error_description || e.details)) || String(e); }
@@ -840,13 +841,13 @@ function reqTable(rows, showEmp=true){
 
 /* ---------- file / resubmit ---------- */
 const COLS = {
-  LEAVE: ['leave_type','with_pay','date_from','date_to','time_from','time_to'],
+  LEAVE: ['leave_type','with_pay','day_part','date_from','date_to','time_from','time_to'],
   OT:    ['date_from','time_from','time_to','reason'],
   UT:    ['date_from','time_from','time_to','reason'],
   OB:    ['date_from','date_to','time_from','time_to','location','reason'],
   COA:   ['date_from','date_to','time_from','time_to','reason'],
 };
-const COL_LABEL = { leave_type:'Type of leave', with_pay:'With / without pay', date_from:'Date from', date_to:'Date to', time_from:'Time from', time_to:'Time to', location:'Location', reason:'Reason / purpose' };
+const COL_LABEL = { leave_type:'Type of leave', with_pay:'With / without pay', day_part:'Whole / half day', date_from:'Date from', date_to:'Date to', time_from:'Time from', time_to:'Time to', location:'Location', reason:'Reason / purpose' };
 const COL_LABEL_OT = { date_from:'Date', time_from:'Start time', time_to:'End time', reason:'Reason / purpose' };
 
 async function vFile(m, code, editId){
@@ -872,11 +873,12 @@ async function vFile(m, code, editId){
     const v = l[c] ?? '';
     if(c==='leave_type') return `<select class="in" data-c="${c}"><option value="">—</option>${S.leaveTypes.filter(x=>x.active).map(x=>`<option value="${esc(x.code)}" ${v===x.code?'selected':''}>${esc(x.code)} – ${esc(x.name)}</option>`).join('')}</select>`;
     if(c==='with_pay') return `<select class="in" data-c="${c}"><option value="true" ${v!==false?'selected':''}>With pay</option><option value="false" ${v===false?'selected':''}>Without pay</option></select>`;
+    if(c==='day_part') return `<select class="in" data-c="${c}"><option value="">Whole day</option><option value="AM" ${v==='AM'?'selected':''}>1st Half – Morning</option><option value="PM" ${v==='PM'?'selected':''}>2nd Half – Afternoon</option></select>`;
     if(c.startsWith('date')) return `<input class="in" type="date" data-c="${c}" value="${esc(v)}">`;
     if(c.startsWith('time')) return `<input class="in" type="time" data-c="${c}" value="${esc(String(v).slice(0,5))}">`;
     return `<input class="in" data-c="${c}" value="${esc(v)}" maxlength="${c==='location'?60:200}">`;
   };
-  const rowHtml = l => `<tr>${cols.map(c=>`<td style="${c==='reason'?'min-width:220px':c==='leave_type'?'min-width:170px':'min-width:120px'}">${cell(c,l)}</td>`).join('')}<td class="calc" style="white-space:nowrap;color:var(--ink-3);font-size:12px"></td><td><button class="btn sm bad" data-del title="Remove row">✕</button></td></tr>`;
+  const rowHtml = l => `<tr>${cols.map(c=>`<td style="${c==='reason'?'min-width:220px':c==='leave_type'?'min-width:170px':c==='day_part'?'min-width:175px':'min-width:120px'}">${cell(c,l)}</td>`).join('')}<td class="calc" style="white-space:nowrap;color:var(--ink-3);font-size:12px"></td><td><button class="btn sm bad" data-del title="Remove row">✕</button></td></tr>`;
 
   m.innerHTML = `<h1>${esc(f.title)}</h1><p class="sub">${existing?`Revising <b>${esc(existing.ref_no)}</b> — make your changes and resubmit.`:esc(FORM_HINT[code]||'')}</p>
   <div class="card"><h3>Employee</h3>
@@ -887,6 +889,7 @@ async function vFile(m, code, editId){
   </div>
   <div class="card"><div class="row"><h3 style="margin:0">Details</h3><div class="sp"></div><span style="font-size:12px;color:var(--ink-3)">Up to ${f.max_rows} rows</span></div>
     <div class="tw" style="margin-top:10px"><table class="t ed"><thead><tr>${cols.map(c=>`<th>${labels[c]}</th>`).join('')}<th>${code==='OT'||code==='UT'?'Hours':'Days'}</th><th></th></tr></thead><tbody id="rows">${lines.map(rowHtml).join('')}</tbody></table></div>
+    ${code==='LEAVE'?`<p style="margin:8px 0 0;font-size:12px;color:var(--ink-3)">Half day (1st Half – Morning or 2nd Half – Afternoon) is available for ${esc(S.leaveTypes.filter(x=>x.active&&x.allow_half).map(x=>x.name).join(' and ')||'no leave type yet')}.</p>`:''}
     <button class="btn sm" id="addrow" style="margin-top:10px">+ Add row</button>
     ${code==='LEAVE'?`<div style="margin-top:14px"><label class="f">Reason</label><textarea class="in" id="reason" maxlength="500">${esc(reason)}</textarea></div>`:''}
   </div>
@@ -899,13 +902,18 @@ async function vFile(m, code, editId){
   const tb = $('#rows');
   const calc = () => $$('#rows tr').forEach(tr=>{
     const g=c=>$(`[data-c="${c}"]`,tr)?.value||'';
-    const l={date_from:g('date_from'),date_to:g('date_to'),time_from:g('time_from'),time_to:g('time_to')};
+    if(code==='LEAVE'){
+      const dp=$('[data-c="day_part"]',tr), lt=(S.leaveTypes.find(x=>x.code===g('leave_type'))||{});
+      dp.disabled = !lt.allow_half; if(dp.disabled) dp.value='';
+      const dt=$('[data-c="date_to"]',tr); dt.disabled = !!dp.value; if(dp.value) dt.value=g('date_from');
+    }
+    const l={date_from:g('date_from'),date_to:g('date_to'),time_from:g('time_from'),time_to:g('time_to'),day_part:code==='LEAVE'?g('day_part'):''};
     let t='';
     if(code==='OT'||code==='UT'){ const h=hrsOf(l); t=h!=null?h+' h':''; }
     else { const d=daysOf(l); t = d && d>0 ? d+' d' : (d!==null&&d<=0?'⚠ dates':''); }
     $('.calc',tr).textContent=t;
   });
-  const wire = () => { $$('[data-del]',tb).forEach(b=>b.onclick=()=>{ if($$('#rows tr').length>1){ b.closest('tr').remove(); calc(); } }); $$('input,select',tb).forEach(i=>i.oninput=calc); };
+  const wire = () => { $$('[data-del]',tb).forEach(b=>b.onclick=()=>{ if($$('#rows tr').length>1){ b.closest('tr').remove(); calc(); } }); $$('input,select',tb).forEach(i=>i.oninput=i.onchange=calc); };
   wire(); calc();
   $('#addrow').onclick=()=>{
     if($$('#rows tr').length>=f.max_rows) return toast(`Maximum of ${f.max_rows} rows`,true);
@@ -982,7 +990,7 @@ async function vInbox(m){
 function lineSummary(l){
   const dr = l.date_to && l.date_to!==l.date_from ? `${fmtD(l.date_from)}–${fmtD(l.date_to)}` : fmtD(l.date_from);
   const tr = l.time_from ? ` ${pTime(l.time_from)}–${pTime(l.time_to)}` : '';
-  return esc([l.leave_type ? `${l.leave_type}${l.with_pay===false?' (w/o pay)':''}` : '', dr + tr, l.location||'', l.reason||''].filter(Boolean).join(' · '));
+  return esc([l.leave_type ? `${l.leave_type}${l.with_pay===false?' (w/o pay)':''}${l.day_part?' '+DAY_PART[l.day_part]:''}` : '', dr + tr, l.location||'', l.reason||''].filter(Boolean).join(' · '));
 }
 
 /* ---------- request detail ---------- */
@@ -1007,7 +1015,7 @@ async function vReq(m, id){
   const own = req.employee_id===S.me.id;
   const canCancel = (own && ['pending','returned'].includes(req.status)) || (isHR() && req.status!=='cancelled');
   const canAttach = (own || isHR()) && ['pending','returned'].includes(req.status);
-  const fmtCell = (c,l) => c==='with_pay' ? (l.with_pay?'With pay':'Without pay') : c.startsWith('date') ? fmtD(l[c]) : c.startsWith('time') ? pTime(l[c]) : c==='leave_type' ? `${esc(l.leave_type)} – ${esc((S.leaveTypes.find(x=>x.code===l.leave_type)||{}).name||'')}` : esc(l[c]||'');
+  const fmtCell = (c,l) => c==='with_pay' ? (l.with_pay?'With pay':'Without pay') : c==='day_part' ? (DAY_PART[l.day_part]||'Whole day') : c.startsWith('date') ? fmtD(l[c]) : c.startsWith('time') ? pTime(l[c]) : c==='leave_type' ? `${esc(l.leave_type)} – ${esc((S.leaveTypes.find(x=>x.code===l.leave_type)||{}).name||'')}` : esc(l[c]||'');
 
   m.innerHTML = `<div class="row"><div><h1>${esc(d.form.title)}</h1><p class="sub" style="margin:0">${esc(req.ref_no)} · filed ${fmtD(req.date_filed)}${req.rev>1?` · revision ${req.rev}`:''}</p></div><div class="sp"></div>${pill(req.status)}</div>
   <div class="row" style="margin:14px 0">
@@ -1118,12 +1126,12 @@ async function vReports(m){
   };
   $('#r-go').onclick=run;
   $('#r-csv').onclick=()=>{
-    const H=['Ref No','Form','Status','Date Filed','Employee','Company','Department','Position','Row','Leave Type','With Pay','Date From','Date To','Time From','Time To','Days','Hours','Location','Reason','Approved By','Approved At','Received By','Received At'];
+    const H=['Ref No','Form','Status','Date Filed','Employee','Company','Department','Position','Row','Leave Type','With Pay','Half Day','Date From','Date To','Time From','Time To','Days','Hours','Location','Reason','Approved By','Approved At','Received By','Received At'];
     const out=[H];
     data.forEach(r=>{
       const co=(S.companies.find(c=>c.id===r.company_id)||{}).code||'';
       const ap=r.appr.filter(a=>a.print_slot==='approved'&&a.status==='approved').pop(), rc=r.appr.filter(a=>a.print_slot==='received'&&a.status==='approved').pop();
-      (r.lines.length?r.lines:[{}]).forEach(l=>out.push([r.ref_no,formOf(r.form_code).name,r.status,r.date_filed,r.emp_name,co,r.emp_department||'',r.emp_position||'',l.line_no||'',l.leave_type||'',l.leave_type?(l.with_pay?'Yes':'No'):'',l.date_from||'',l.date_to||'',(l.time_from||'').slice(0,5),(l.time_to||'').slice(0,5),
+      (r.lines.length?r.lines:[{}]).forEach(l=>out.push([r.ref_no,formOf(r.form_code).name,r.status,r.date_filed,r.emp_name,co,r.emp_department||'',r.emp_position||'',l.line_no||'',l.leave_type||'',l.leave_type?(l.with_pay?'Yes':'No'):'',l.day_part?DAY_PART[l.day_part]:'',l.date_from||'',l.date_to||'',(l.time_from||'').slice(0,5),(l.time_to||'').slice(0,5),
         ['OT','UT'].includes(r.form_code)?'':(daysOf(l)??''), ['OT','UT'].includes(r.form_code)?(hrsOf(l)??''):'', l.location||'', r.form_code==='LEAVE'?(r.reason||''):(l.reason||''),
         ap?.acted_by_name||'', ap?.acted_at?fmtTs(ap.acted_at):'', rc?.acted_by_name||'', rc?.acted_at?fmtTs(rc.acted_at):'']));
     });
@@ -1315,15 +1323,16 @@ async function vRoutes(m){
 async function vLeaveTypes(m){
   await loadRefs();
   m.innerHTML = `<div class="row"><div><h1>Leave types</h1><p class="sub" style="margin:0">Active types appear in the leave form dropdown and in the printed form's Leave Legend.</p></div><div class="sp"></div><button class="btn pri" id="add">+ Add leave type</button></div>
-  <div class="tw" style="margin-top:14px"><table class="t"><thead><tr><th>Code</th><th>Name</th><th>Order</th><th>Status</th></tr></thead><tbody>
-  ${S.leaveTypes.map(l=>`<tr class="click" data-l="${esc(l.code)}"><td><b>${esc(l.code)}</b></td><td>${esc(l.name)}</td><td>${l.sort}</td><td>${l.active?'Active':'Inactive'}</td></tr>`).join('')}</tbody></table></div>`;
+  <div class="tw" style="margin-top:14px"><table class="t"><thead><tr><th>Code</th><th>Name</th><th>Half day</th><th>Order</th><th>Status</th></tr></thead><tbody>
+  ${S.leaveTypes.map(l=>`<tr class="click" data-l="${esc(l.code)}"><td><b>${esc(l.code)}</b></td><td>${esc(l.name)}</td><td>${l.allow_half?'Allowed':'—'}</td><td>${l.sort}</td><td>${l.active?'Active':'Inactive'}</td></tr>`).join('')}</tbody></table></div>`;
   const form=l=>modal(`<h3>${l.code?'Edit':'Add'} leave type</h3>
     <div class="grid g2"><div><label class="f">Code</label><input class="in" id="l-code" maxlength="6" value="${esc(l.code||'')}" ${l.code?'disabled':''}></div><div><label class="f">Order</label><input class="in" id="l-sort" type="number" value="${l.sort??(S.leaveTypes.length+1)}"></div>
     <div style="grid-column:1/-1"><label class="f">Name</label><input class="in" id="l-name" value="${esc(l.name||'')}"></div>
-    <div><label class="f">Status</label><select class="in" id="l-act"><option value="true">Active</option><option value="false" ${l.active===false?'selected':''}>Inactive</option></select></div></div>
+    <div><label class="f">Status</label><select class="in" id="l-act"><option value="true">Active</option><option value="false" ${l.active===false?'selected':''}>Inactive</option></select></div>
+    <div><label class="f">Half day</label><select class="in" id="l-half"><option value="false">Whole day only</option><option value="true" ${l.allow_half?'selected':''}>Allow 1st / 2nd half</option></select></div></div>
     <div class="acts"><button class="btn" data-close>Cancel</button><button class="btn pri" id="l-save">Save</button></div>`,(mm,close)=>{
       $('#l-save',mm).onclick=async()=>{
-        const rec={ name:$('#l-name',mm).value.trim(), sort:+$('#l-sort',mm).value||0, active:$('#l-act',mm).value==='true' };
+        const rec={ name:$('#l-name',mm).value.trim(), sort:+$('#l-sort',mm).value||0, active:$('#l-act',mm).value==='true', allow_half:$('#l-half',mm).value==='true' };
         const code=$('#l-code',mm).value.trim().toUpperCase(); if(!code||!rec.name) return toast('Code and name are required',true);
         try{ if(l.code) await q(sb.from('hrf_leave_types').update(rec).eq('code',l.code)); else await q(sb.from('hrf_leave_types').insert({...rec,code})); close(); toast('Saved'); route(); }catch(e){ toast(errMsg(e),true); }
       };
